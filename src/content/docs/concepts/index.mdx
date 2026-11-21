@@ -6,11 +6,13 @@ sidebar:
   order: 1
 ---
 
+import RecordPath from '../../../components/diagrams/RecordPath.astro';
+
 Spool takes data from external sources to a data mart in separate steps. Each step is a module, and modules never call each other. One publishes an event when it finishes its work, and the next one reacts to it. That is what makes every record traceable, and what lets the same pipeline run in one process or across several machines.
 
 ## Nodes and modules
 
-A node is a Java process that runs one or more modules. You describe it in a [descriptor](/dsl/) or build it in code, and start it with `SpoolRuntime`.
+A node is a Java process that runs one or more modules. You describe it in a [descriptor](/dsl/) or build it in code, and start it with `SpoolRuntime`. A pipeline can run as one node or as several, as [Deployment](/concepts/deployment/) explains.
 
 | Module | What it does |
 | --- | --- |
@@ -31,6 +33,8 @@ Modules share three pieces of infrastructure, each one behind a port with interc
 - The **data lake** stores the records, partitioned by capture time and source.
 
 ## The path of a record
+
+<RecordPath />
 
 1. The crawler reads the source and splits the response into records. It wraps each record in an envelope, stores it in the inbox with the state `CAPTURED` and publishes `EnvelopeStored`.
 2. The ingester receives `EnvelopeStored`, reads the envelope from the inbox and runs the validation rules for its source.

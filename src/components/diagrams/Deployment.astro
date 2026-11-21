@@ -1,0 +1,74 @@
+---
+const single = [
+	{ x: 36, label: 'crawler' },
+	{ x: 132, label: 'ingester' },
+	{ x: 228, label: 'janitor' },
+	{ x: 324, label: 'mounter' },
+];
+const nodes = [
+	{ x: 480, width: 110, name: 'node A', modules: ['crawler'] },
+	{ x: 610, width: 150, name: 'node B', modules: ['ingester', 'janitor'] },
+	{ x: 780, width: 120, name: 'node C', modules: ['mounter'] },
+];
+---
+
+<figure class="spool-diagram">
+	<svg
+		viewBox="0 0 910 290"
+		role="img"
+		aria-label="On the left, one Java process runs every module with an in-memory event bus and folders for the inbox and the data lake. On the right, three nodes run different modules, share a Kafka event bus, an S3 inbox and a data lake in a shared folder."
+	>
+		<text class="title" x="20" y="20">One node</text>
+
+		<rect class="store" x="40" y="36" width="150" height="44" rx="4" />
+		<text class="name" x="115" y="56" text-anchor="middle">inbox</text>
+		<text class="small" x="115" y="72" text-anchor="middle">folder</text>
+		<rect class="store" x="250" y="36" width="150" height="44" rx="4" />
+		<text class="name" x="325" y="56" text-anchor="middle">data lake</text>
+		<text class="small" x="325" y="72" text-anchor="middle">folder</text>
+		<line class="link" x1="115" y1="80" x2="115" y2="120" />
+		<line class="link" x1="325" y1="80" x2="325" y2="120" />
+
+		<rect class="process" x="20" y="120" width="400" height="150" rx="8" />
+		<text class="small" x="32" y="140">one Java process</text>
+		{single.map((module) => (
+			<g>
+				<rect class="box" x={module.x} y="152" width="84" height="40" rx="6" />
+				<text class="name" x={module.x + 42} y="177" text-anchor="middle">{module.label}</text>
+				<line class="link" x1={module.x + 42} y1="192" x2={module.x + 42} y2="220" />
+			</g>
+		))}
+		<rect class="bus" x="36" y="220" width="372" height="32" rx="4" />
+		<text class="name" x="222" y="241" text-anchor="middle">IN_MEMORY event bus</text>
+
+		<text class="title" x="480" y="20">Several nodes</text>
+
+		<rect class="store" x="490" y="36" width="160" height="44" rx="4" />
+		<text class="name" x="570" y="56" text-anchor="middle">inbox</text>
+		<text class="small" x="570" y="72" text-anchor="middle">S3</text>
+		<rect class="store" x="720" y="36" width="170" height="44" rx="4" />
+		<text class="name" x="805" y="56" text-anchor="middle">data lake</text>
+		<text class="small" x="805" y="72" text-anchor="middle">shared folder</text>
+
+		<line class="link" x1="535" y1="120" x2="555" y2="80" />
+		<line class="link" x1="650" y1="120" x2="605" y2="80" />
+		<line class="link" x1="720" y1="120" x2="770" y2="80" />
+		<line class="link" x1="840" y1="120" x2="830" y2="80" />
+
+		{nodes.map((node) => (
+			<g>
+				<rect class="process" x={node.x} y="120" width={node.width} height="96" rx="8" />
+				<text class="small" x={node.x + 10} y="138">{node.name}</text>
+				{node.modules.map((module, index) => (
+					<text class="name" x={node.x + node.width / 2} y={166 + index * 22} text-anchor="middle">{module}</text>
+				))}
+				<line class="link" x1={node.x + node.width / 2} y1="216" x2={node.x + node.width / 2} y2="240" />
+			</g>
+		))}
+		<rect class="bus" x="480" y="240" width="420" height="32" rx="4" />
+		<text class="name" x="690" y="261" text-anchor="middle">KAFKA event bus</text>
+	</svg>
+	<figcaption>
+		The modules are the same in both cases. What changes is the infrastructure in the descriptor, with an in-memory bus and folders for one process, and Kafka and shared storage when the modules run in different nodes.
+	</figcaption>
+</figure>

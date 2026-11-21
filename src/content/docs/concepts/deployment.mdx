@@ -1,0 +1,38 @@
+---
+title: Deployment
+description: Run a pipeline on your laptop, as a single service or spread across several machines, by changing only the infrastructure in the descriptor.
+sidebar:
+  order: 3
+---
+
+import Deployment from '../../../components/diagrams/Deployment.astro';
+
+The modules of a pipeline do not know where the others run. They only talk through the event bus and through the storage they share, so the same pipeline can run in one process or in several, and moving from one to the other means changing the `infrastructure` block of the descriptor, not the code.
+
+<Deployment />
+
+## On your laptop
+
+Every module runs in one node, with the `IN_MEMORY` event bus and folders for the inbox and the data lake. Nothing else has to be installed, which makes it the way to develop and test a pipeline. [Build your first pipeline](/getting-started/first-pipeline/) runs like this.
+
+## As a single service
+
+The same layout works in production when one machine is enough. The node runs as one service, and the inbox and the data lake can stay in folders on a persistent disk or move to S3. Because the bus is in memory, every module must stay in that process.
+
+## Across several machines
+
+Each node runs the modules you choose, for example the crawlers in one node, the ingester and the janitor in another and the mounter in a third. The nodes need to share three things.
+
+| Piece | What to use | Why |
+| --- | --- | --- |
+| Event bus | `KAFKA` | Events must reach modules in other nodes. |
+| Inbox | `S3`, or a folder every node can reach | The crawler writes envelopes that the ingester and the janitor read. |
+| Data lake | A folder every node can reach | The ingester writes it and the mounter reads it. In this version the mounter can only read a data lake on the file system. |
+
+Each node has its own descriptor, with the same `infrastructure` block and only its own modules.
+
+Every node opens port 8080 for its [health endpoint](/operations/#node-health). Nodes built from a descriptor always use that port, so on the same machine each one needs its own container. A node built in Java can take another port with `SpoolNode.create(port)`.
+
+## Watching it run
+
+Wherever the nodes run, every module reports through OpenTelemetry, and the [watchdog](/modules/watchdog/) receives a heartbeat from each one. [Operations](/operations/) explains how to see it all in Grafana.

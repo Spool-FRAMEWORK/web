@@ -6,6 +6,8 @@ sidebar:
   order: 1
 ---
 
+import Observability from '../../../components/diagrams/Observability.astro';
+
 A Spool node reports what it does in three ways. It sends OpenTelemetry signals (traces, logs and metrics), it answers on a health endpoint, and its modules send heartbeats to the [watchdog](/modules/watchdog/).
 
 ## Telemetry
@@ -43,6 +45,8 @@ When nothing is listening at an endpoint, the node keeps working and logs `Faile
 
 The [devenv](https://github.com/Spool-FRAMEWORK/devenv) repository runs Grafana, Tempo, Loki, Prometheus and an OpenTelemetry Collector with Docker Compose. Its ports match the defaults above, so a node started without endpoints sends everything to it.
 
+<Observability />
+
 ```sh
 git clone https://github.com/Spool-FRAMEWORK/devenv.git
 cd devenv
@@ -57,7 +61,7 @@ docker compose up
 | OpenTelemetry Collector | 4320 | Metrics, which it passes on to Prometheus. |
 | Prometheus | 9090 | Metric queries. |
 
-Grafana comes with a dashboard for the crawler, the ingester, the janitor and the watchdog, in the Spool folder.
+Grafana comes ready with a dashboard for the crawler, the ingester, the janitor and the watchdog, in the Spool folder. Because every module reports through OpenTelemetry from the start, those dashboards fill in as soon as a node runs, without adding any instrumentation to your code.
 
 ## Metrics
 

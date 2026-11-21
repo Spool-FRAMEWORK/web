@@ -1,6 +1,7 @@
 ---
 import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
 import { Code } from '@astrojs/starlight/components';
+import RecordPath from '../components/diagrams/RecordPath.astro';
 import { mavenDependency, site, withBase } from '../data/site';
 
 
@@ -43,6 +44,10 @@ const guides = [
 			<a href="#modules">Modules</a>
 		</nav>
 
+		<div class="record-path">
+			<RecordPath />
+		</div>
+
 		<div class="columns">
 			<div class="main-column">
 				<h2 id="overview">Overview</h2>
@@ -58,7 +63,8 @@ const guides = [
 					<li>Records that break a validation rule are not written to the data lake. They go to quarantine with the list of violations.</li>
 					<li>Storage and messaging are ports with interchangeable backends, such as the file system or S3 for storage and Kafka or memory for the event bus.</li>
 					<li>Validation rules are plain Java classes, discovered at runtime.</li>
-					<li>Traces, metrics and logs are exported with OpenTelemetry.</li>
+					<li>The same pipeline runs on a laptop, as a single service or spread across several machines. Only the infrastructure in the descriptor changes.</li>
+					<li>Every module exports traces, metrics and logs with OpenTelemetry, and the devenv stack shows them in a Grafana dashboard for each module.</li>
 				</ul>
 
 				<h2 id="getting-started">Getting started</h2>
@@ -143,6 +149,9 @@ const guides = [
 	}
 	.sections a:hover {
 		color: var(--sl-color-text-accent);
+	}
+	.record-path {
+		margin-top: 2rem !important;
 	}
 	.columns {
 		display: flex;

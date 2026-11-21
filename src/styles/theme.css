@@ -71,3 +71,87 @@ header.header {
 	background-color: var(--spool-band-background);
 	color: var(--spool-button-outline-text);
 }
+
+.spool-diagram {
+	margin-block: 1.5rem;
+}
+.spool-diagram svg {
+	display: block;
+	width: 100%;
+	height: auto;
+	color: var(--sl-color-white);
+	font-family: var(--__sl-font);
+}
+.spool-diagram figcaption {
+	margin-top: 0.5rem;
+	font-size: var(--sl-text-sm);
+	color: var(--sl-color-gray-3);
+}
+.spool-diagram .box {
+	fill: var(--sl-color-bg);
+	stroke: currentColor;
+	stroke-width: 1.5;
+}
+.spool-diagram .store {
+	fill: var(--spool-band-background);
+	stroke: currentColor;
+	stroke-width: 1;
+}
+.spool-diagram .external {
+	fill: none;
+	stroke: currentColor;
+	stroke-width: 1.5;
+	stroke-dasharray: 5 4;
+}
+.spool-diagram .process {
+	fill: none;
+	stroke: var(--sl-color-gray-4);
+	stroke-width: 1.5;
+}
+.spool-diagram .bus {
+	fill: var(--sl-color-accent-low);
+	stroke: var(--sl-color-accent);
+	stroke-width: 1.5;
+}
+.spool-diagram .edge {
+	fill: none;
+	stroke: currentColor;
+	stroke-width: 1.5;
+}
+.spool-diagram .link {
+	fill: none;
+	stroke: var(--sl-color-gray-4);
+	stroke-width: 1.5;
+}
+.spool-diagram .event {
+	fill: none;
+	stroke: var(--sl-color-accent);
+	stroke-width: 1.5;
+	stroke-dasharray: 6 4;
+}
+.spool-diagram .arrowhead {
+	fill: currentColor;
+}
+.spool-diagram .arrowhead-event {
+	fill: var(--sl-color-accent);
+}
+.spool-diagram text {
+	fill: currentColor;
+	font-size: 15px;
+}
+.spool-diagram .name {
+	font-size: 16px;
+	font-weight: 600;
+}
+.spool-diagram .small {
+	font-size: 14px;
+	fill: var(--sl-color-gray-3);
+}
+.spool-diagram .title {
+	font-size: 17px;
+	font-weight: 700;
+}
+.spool-diagram .event-label {
+	fill: var(--sl-color-text-accent);
+	font-size: 14.5px;
+}

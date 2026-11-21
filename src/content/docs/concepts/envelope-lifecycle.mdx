@@ -5,9 +5,13 @@ sidebar:
   order: 2
 ---
 
+import EnvelopeStates from '../../../components/diagrams/EnvelopeStates.astro';
+
 Every record that enters Spool travels inside an envelope. The envelope holds the original data, unchanged, together with what Spool needs to trace it. That is an idempotency key, the source it came from, a correlation identifier, its state, the number of retries and the time it was captured.
 
 ## States
+
+<EnvelopeStates />
 
 | State | Set by | Meaning |
 | --- | --- | --- |
