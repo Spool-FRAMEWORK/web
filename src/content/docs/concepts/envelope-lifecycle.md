@@ -1,0 +1,46 @@
+---
+title: Envelope lifecycle
+description: The states of an envelope in the inbox, who changes them and how the janitor deals with stuck and old envelopes.
+sidebar:
+  order: 2
+---
+
+Every record that enters Spool travels inside an envelope. The envelope holds the original data, unchanged, together with what Spool needs to trace it: an idempotency key, the source it came from, a correlation identifier, its state, the number of retries and when it was captured.
+
+## States
+
+| State | Set by | Meaning |
+| --- | --- | --- |
+| `CAPTURED` | crawler | The record has been read and stored in the inbox, and is waiting to be ingested. |
+| `PERSISTED` | janitor | The ingester has written the record to the data lake. |
+| `QUARANTINED` | janitor | The record broke a validation rule, or it was still waiting after the last retry. |
+
+The janitor changes the state when it sees the `EnvelopePersisted` and `EnvelopeQuarantined` events, so there can be a few seconds between the ingester writing a record and the inbox showing it as `PERSISTED`.
+
+The state model also includes `INGESTED`, but no module sets it in this version.
+
+## Idempotency
+
+The idempotency key is a SHA-256 of the source identifier and the content of the record. The inbox stores each envelope under its key, so reading the same record twice does not create a second envelope.
+
+## Stuck envelopes
+
+An envelope that stays in `CAPTURED` longer than the janitor's threshold is published again, and its retry counter goes up by one. When the counter reaches three, the janitor stops publishing it and sets it to `QUARANTINED`.
+
+| Descriptor key | Meaning | Default |
+| --- | --- | --- |
+| `milliseconds` | How often the janitor runs. | 5000 |
+| `millisecondsThreshold` | How long an envelope can stay in `CAPTURED` before it is published again. | 3 minutes |
+| `millisecondsTTL` | How long a `PERSISTED` envelope stays in the inbox before it is deleted. | 1 day |
+
+The number of retries can only be changed when the janitor is built in Java, with `withMaxRetries`.
+
+## Old envelopes
+
+Once a record is in the data lake, the inbox no longer needs it. The janitor deletes `PERSISTED` envelopes that have not changed for longer than `millisecondsTTL`. Envelopes in `QUARANTINED` are kept.
+
+## Quarantine
+
+When the ingester finds a record that breaks a validation rule, it does not write it to the data lake. It sends the original data and the list of violations to a quarantine store, and publishes `EnvelopeQuarantined`.
+
+The quarantine store is a port of the ingester, `QuarantineStore`, and has to be provided when the ingester is built in Java. A node built from a descriptor has no quarantine store in this version.

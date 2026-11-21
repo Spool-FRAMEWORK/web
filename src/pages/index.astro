@@ -1,14 +1,7 @@
 ---
 import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
-import { site, withBase } from '../data/site';
+import { mavenDependency, site, withBase } from '../data/site';
 
-const { groupId, artifactId, version } = site.latestRelease;
-
-const dependency = `<dependency>
-  <groupId>${groupId}</groupId>
-  <artifactId>${artifactId}</artifactId>
-  <version>${version}</version>
-</dependency>`;
 
 const modules = [
 	{ name: 'crawler', summary: 'Reads external sources and saves each record in the inbox.' },
@@ -21,6 +14,7 @@ const modules = [
 
 const guides = [
 	{ label: 'Install Spool', path: 'getting-started/' },
+	{ label: 'Build your first pipeline', path: 'getting-started/first-pipeline/' },
 	{ label: 'Follow an entry of the Spanish official gazette through a pipeline', path: 'examples/' },
 ];
 ---
@@ -59,8 +53,8 @@ const guides = [
 
 				<h2 id="features">Features</h2>
 				<ul>
-					<li>Every change in the state of a record (captured, ingested, persisted) is published as an event.</li>
-					<li>Records that fail validation go to a quarantine that keeps their history and lets you send them back once they are fixed.</li>
+					<li>Every step a record takes is published as an event, with a correlation identifier shared by all the events about that record.</li>
+					<li>Records that break a validation rule are not written to the data lake: they go to quarantine with the list of violations.</li>
 					<li>Storage and messaging are ports with interchangeable backends: the file system or S3 for storage, Kafka or memory for the event bus.</li>
 					<li>Validation rules are plain Java classes, discovered at runtime.</li>
 					<li>Traces, metrics and logs are exported with OpenTelemetry.</li>
@@ -90,7 +84,7 @@ const guides = [
 				<section class="quickstart">
 					<h2>Quickstart</h2>
 					<p>Spool needs Java {site.requiredJavaVersion} or later. Add the runtime to your <code>pom.xml</code>:</p>
-					<pre><code>{dependency}</code></pre>
+					<pre><code>{mavenDependency}</code></pre>
 				</section>
 				<section class="resources">
 					<h2>Resources</h2>

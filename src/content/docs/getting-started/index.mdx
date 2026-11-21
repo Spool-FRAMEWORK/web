@@ -1,0 +1,39 @@
+---
+title: Install Spool
+description: Add Spool to a Maven project.
+sidebar:
+  label: Install
+  order: 1
+---
+
+import { Code } from '@astrojs/starlight/components';
+import { site, mavenDependency } from '../../../data/site';
+
+Spool needs Java {site.requiredJavaVersion} or later. It is published on Maven Central under the group `{site.latestRelease.groupId}`, so no extra repository is needed in your `pom.xml`.
+
+## Add the runtime
+
+The `runtime` artifact starts pipelines and brings the rest of the framework with it. Add it to the dependencies of your project:
+
+<Code code={mavenDependency} lang="xml" title="pom.xml" />
+
+## What the runtime includes
+
+Version {site.latestRelease.version} of the runtime pulls in these modules:
+
+<table>
+	<thead>
+		<tr><th>Artifact</th><th>Version</th><th>What it does</th></tr>
+	</thead>
+	<tbody>
+		{site.latestRelease.includedModules.map((module) => (
+			<tr><td><code>{module.artifactId}</code></td><td>{module.version}</td><td>{module.role}</td></tr>
+		))}
+	</tbody>
+</table>
+
+The watchdog, which collects the health of every module, is a separate service and is not part of the runtime.
+
+## Next step
+
+[Build your first pipeline](/getting-started/first-pipeline/) with the modules you have just added.
