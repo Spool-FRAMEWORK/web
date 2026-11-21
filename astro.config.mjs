@@ -3,6 +3,7 @@ import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 import react from '@astrojs/react';
 import starlightLinksValidator from 'starlight-links-validator';
+import { site } from './src/data/site.ts';
 
 const sections = [
 	{ label: 'Getting started', directory: 'getting-started' },
@@ -19,9 +20,12 @@ export default defineConfig({
 	base: process.env.SITE_BASE_PATH,
 	integrations: [
 		starlight({
-			title: 'Spool',
-			description: 'Modular, event-driven Java framework for auditable data pipelines, from source to data mart.',
-			social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/Spool-FRAMEWORK' }],
+			title: site.name,
+			description: site.description,
+			social: [{ icon: 'github', label: 'GitHub', href: site.githubUrl }],
+			editLink: { baseUrl: `${site.webRepositoryUrl}/edit/develop/` },
+			customCss: ['./src/styles/theme.css'],
+			components: { Header: './src/components/Header.astro' },
 			plugins: [starlightLinksValidator()],
 			sidebar: sections.map(({ label, directory }) => ({
 				label,

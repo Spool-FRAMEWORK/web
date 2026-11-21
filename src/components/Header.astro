@@ -1,0 +1,54 @@
+---
+import Search from '@astrojs/starlight/components/Search.astro';
+import SiteTitle from '@astrojs/starlight/components/SiteTitle.astro';
+import SocialIcons from '@astrojs/starlight/components/SocialIcons.astro';
+import ThemeSelect from '@astrojs/starlight/components/ThemeSelect.astro';
+import { headerLinks, withBase } from '../data/site';
+---
+
+<div class="header">
+	<div class="title-wrapper sl-flex"><SiteTitle /></div>
+	<nav class="header-links sl-hidden md:sl-flex" aria-label="Main">
+		{headerLinks.map((link) => <a href={withBase(link.path)}>{link.label}</a>)}
+	</nav>
+	<div class="sl-flex print:hidden search"><Search /></div>
+	<div class="sl-hidden md:sl-flex print:hidden right-group">
+		<div class="sl-flex social-icons"><SocialIcons /></div>
+		<ThemeSelect />
+	</div>
+</div>
+
+<style>
+	.header {
+		display: flex;
+		gap: var(--sl-nav-gap);
+		align-items: center;
+		height: 100%;
+	}
+	.title-wrapper {
+		overflow: clip;
+		padding: 0.25rem;
+		margin: -0.25rem;
+		min-width: 0;
+	}
+	.header-links {
+		gap: 1.5rem;
+		font-size: var(--sl-text-sm);
+	}
+	.header-links a {
+		color: var(--sl-color-gray-2);
+		text-decoration: none;
+	}
+	.header-links a:hover {
+		color: var(--sl-color-white);
+	}
+	.search {
+		flex: 1;
+		justify-content: flex-end;
+	}
+	.right-group,
+	.social-icons {
+		gap: 1rem;
+		align-items: center;
+	}
+</style>

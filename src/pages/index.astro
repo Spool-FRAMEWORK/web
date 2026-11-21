@@ -1,0 +1,239 @@
+---
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+import { site, withBase } from '../data/site';
+
+const { groupId, artifactId, version } = site.latestRelease;
+
+const dependency = `<dependency>
+  <groupId>${groupId}</groupId>
+  <artifactId>${artifactId}</artifactId>
+  <version>${version}</version>
+</dependency>`;
+
+const modules = [
+	{ name: 'crawler', summary: 'Reads external sources and saves each record in the inbox.' },
+	{ name: 'ingester', summary: 'Validates records and writes them to the data lake.' },
+	{ name: 'validator', summary: 'Runs the validation rules you write.' },
+	{ name: 'janitor', summary: 'Retries stuck records, quarantines failed ones and deletes expired ones.' },
+	{ name: 'mounter', summary: 'Aggregates data lake partitions into the data mart.' },
+	{ name: 'watchdog', summary: 'Collects heartbeats and reports the health of each module.' },
+];
+
+const guides = [
+	{ label: 'Install Spool', path: 'getting-started/' },
+	{ label: 'Follow an entry of the Spanish official gazette through a pipeline', path: 'examples/' },
+];
+---
+
+<StarlightPage
+	frontmatter={{
+		title: site.name,
+		description: site.description,
+		template: 'splash',
+		hero: {
+			title: site.name,
+			tagline: `${site.description} Each part of the pipeline is a separate module, and modules communicate through events, so every record can be traced from the moment it is read until it reaches the data mart.`,
+			actions: [
+				{ text: 'Get started', link: withBase('getting-started/'), variant: 'primary' },
+				{ text: 'View on GitHub', link: site.githubUrl, variant: 'secondary' },
+			],
+		},
+	}}
+>
+	<div class="landing">
+		<nav class="sections" aria-label="On this page">
+			<a href="#overview">Overview</a>
+			<a href="#features">Features</a>
+			<a href="#getting-started">Getting started</a>
+			<a href="#modules">Modules</a>
+		</nav>
+
+		<div class="columns">
+			<div class="main-column">
+				<h2 id="overview">Overview</h2>
+				<p>
+					A pipeline is described in a YAML file, or built in Java with the builder of each module,
+					and started with <code>SpoolRuntime</code>. The same pipeline can run as a single process
+					on a laptop or spread across several machines.
+				</p>
+
+				<h2 id="features">Features</h2>
+				<ul>
+					<li>Every change in the state of a record (captured, ingested, persisted) is published as an event.</li>
+					<li>Records that fail validation go to a quarantine that keeps their history and lets you send them back once they are fixed.</li>
+					<li>Storage and messaging are ports with interchangeable backends: the file system or S3 for storage, Kafka or memory for the event bus.</li>
+					<li>Validation rules are plain Java classes, discovered at runtime.</li>
+					<li>Traces, metrics and logs are exported with OpenTelemetry.</li>
+				</ul>
+
+				<h2 id="getting-started">Getting started</h2>
+				<p>If you are new to Spool, start with these guides:</p>
+				<ul>
+					{guides.map((guide) => <li><a href={withBase(guide.path)}>{guide.label}</a></li>)}
+				</ul>
+
+				<h2 id="modules">Modules</h2>
+				<p>Each module is published as its own Maven artifact. Use the ones your pipeline needs.</p>
+				<table>
+					<thead>
+						<tr><th scope="col">Module</th><th scope="col">What it does</th></tr>
+					</thead>
+					<tbody>
+						{modules.map((module) => (
+							<tr><td><a href={withBase('modules/')}>{module.name}</a></td><td>{module.summary}</td></tr>
+						))}
+					</tbody>
+				</table>
+			</div>
+
+			<aside class="side-column">
+				<section class="quickstart">
+					<h2>Quickstart</h2>
+					<p>Spool needs Java {site.requiredJavaVersion} or later. Add the runtime to your <code>pom.xml</code>:</p>
+					<pre><code>{dependency}</code></pre>
+				</section>
+				<section class="resources">
+					<h2>Resources</h2>
+					<a href={withBase('getting-started/')}>Reference documentation</a>
+					<a href={site.githubUrl}>Source code on GitHub</a>
+					<a href={site.examplesUrl}>Example pipelines</a>
+				</section>
+			</aside>
+		</div>
+
+		<p class="license">Spool is open source under the Apache 2.0 license.</p>
+	</div>
+</StarlightPage>
+
+<style>
+	:global([data-has-hero] .hero) {
+		text-align: start;
+		justify-items: start;
+		padding-block: 2.5rem 1rem;
+		background-color: var(--spool-band-background);
+		box-shadow: 0 0 0 100vmax var(--spool-band-background);
+		clip-path: inset(-1.5rem -100vmax 0 -100vmax);
+	}
+	:global([data-has-hero] .hero .stack),
+	:global([data-has-hero] .hero .copy) {
+		align-items: flex-start;
+		text-align: start;
+	}
+	:global([data-has-hero] .hero h1) {
+		font-size: 2.5rem;
+	}
+	:global([data-has-hero] .hero .tagline) {
+		max-width: 52rem;
+		font-size: 1.125rem;
+		line-height: 1.6;
+		color: var(--sl-color-text);
+	}
+	:global([data-has-hero] .hero .actions) {
+		justify-content: flex-start;
+	}
+
+	.landing {
+		margin-top: 0 !important;
+	}
+	.sections {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0 2rem;
+		border-bottom: 1px solid var(--spool-border);
+	}
+	.sections a {
+		padding: 0.75rem 0;
+		color: var(--sl-color-gray-2);
+		text-decoration: none;
+		font-size: var(--sl-text-sm);
+	}
+	.sections a:hover {
+		color: var(--sl-color-text-accent);
+	}
+	.columns {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 2.5rem 3.5rem;
+		align-items: flex-start;
+		margin-top: 2rem;
+	}
+	.main-column {
+		flex: 999 1 32rem;
+		min-width: 0;
+	}
+	.main-column > :global(* + *) {
+		margin-top: 1rem;
+	}
+	.main-column h2 {
+		font-size: var(--sl-text-2xl);
+		margin-top: 2rem;
+	}
+	.main-column h2:first-child {
+		margin-top: 0;
+	}
+	.main-column ul {
+		padding-inline-start: 1.25rem;
+	}
+	.main-column li + li {
+		margin-top: 0.5rem;
+	}
+	table {
+		display: table;
+		width: 100%;
+		border-collapse: collapse;
+		border: 1px solid var(--spool-border);
+		font-size: var(--sl-text-sm);
+	}
+	th,
+	td {
+		text-align: start;
+		padding: 0.625rem 1rem;
+		border-bottom: 1px solid var(--spool-border);
+	}
+	th {
+		background-color: var(--spool-band-background);
+	}
+	.side-column {
+		flex: 1 1 20rem;
+		min-width: 0;
+		max-width: 26rem;
+		display: flex;
+		flex-direction: column;
+		gap: 2rem;
+	}
+	.side-column h2 {
+		font-size: var(--sl-text-lg);
+	}
+	.quickstart {
+		border: 1px solid var(--spool-border);
+		border-radius: 0.25rem;
+		padding: 1.25rem;
+	}
+	.quickstart > * + * {
+		margin-top: 0.75rem;
+	}
+	.quickstart p {
+		font-size: var(--sl-text-sm);
+	}
+	.quickstart pre {
+		background-color: var(--spool-band-background);
+		border-radius: 0.25rem;
+		padding: 0.875rem;
+		overflow-x: auto;
+		font-size: var(--sl-text-xs);
+		line-height: 1.6;
+	}
+	.license {
+		margin-top: 4rem !important;
+		padding-top: 1.5rem;
+		border-top: 1px solid var(--spool-border);
+		font-size: var(--sl-text-sm);
+		color: var(--sl-color-gray-3);
+	}
+	.resources {
+		display: flex;
+		flex-direction: column;
+		gap: 0.625rem;
+		font-size: var(--sl-text-sm);
+	}
+</style>
