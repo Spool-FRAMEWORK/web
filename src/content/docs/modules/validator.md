@@ -7,11 +7,11 @@ sidebar:
 
 A validation rule is a Java class. The ingester finds every rule on the classpath and runs the ones registered for the source of each record. You do not declare rules in the descriptor.
 
-Artifact: `validator` 1.2.0, included in the runtime.
+The `validator` artifact, version 1.2.0, is included in the runtime.
 
 ## Write a rule
 
-A rule implements `Validator<T>` for the class of the record and is annotated with `@Validate`, which names that class and the source:
+A rule implements `Validator<T>` for the class of the record and is annotated with `@Validate`, which names that class and the source.
 
 ```java title="AmountLimit.java"
 import software.spool.validator.api.Validate;
@@ -31,7 +31,7 @@ public class AmountLimit implements Validator<Order> {
 }
 ```
 
-The record class is read from the payload with Jackson, so the field names must match the source:
+The record class is read from the payload with Jackson, so the field names must match the source.
 
 ```java title="Order.java"
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -48,7 +48,7 @@ public record Order(
 
 ## How rules are found
 
-The validator artifact includes an annotation processor. When you compile, it writes every class annotated with `@Validate` into `META-INF/services/software.spool.validator.api.Validator`, and the ingester loads them from there with `ServiceLoader`. Your build must run annotation processors from the classpath: JDK 21 does by default, and JDK 23 and later need `-proc:full`.
+The validator artifact includes an annotation processor. When you compile, it writes every class annotated with `@Validate` into `META-INF/services/software.spool.validator.api.Validator`, and the ingester loads them from there with `ServiceLoader`. Your build must run annotation processors from the classpath. JDK 21 does by default, and JDK 23 and later need `-proc:full`.
 
 ## Annotation options
 
@@ -61,4 +61,4 @@ The validator artifact includes an annotation processor. When you compile, it wr
 
 ## What happens to an invalid record
 
-A record that breaks a rule is not written to the data lake. What happens next depends on how the ingester was built; see [Quarantine](/modules/ingester/#quarantine).
+A record that breaks a rule is not written to the data lake. What happens next depends on how the ingester was built, as [Quarantine](/modules/ingester/#quarantine) explains.

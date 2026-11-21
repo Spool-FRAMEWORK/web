@@ -11,7 +11,7 @@ You need a Maven project with the runtime, as described in [Install Spool](/gett
 
 ## 1. Serve some data
 
-The crawler needs a source to read. Save this file as `orders.json`:
+The crawler needs a source to read. Save this file as `orders.json`.
 
 ```json title="orders.json"
 [
@@ -21,7 +21,7 @@ The crawler needs a source to read. Save this file as `orders.json`:
 ]
 ```
 
-Serve it on port 8000 from the folder that contains it. Any HTTP server that returns a JSON array works; this one comes with Python:
+Serve it on port 8000 from the folder that contains it. Any HTTP server that returns a JSON array works, and this one comes with Python.
 
 ```sh
 python -m http.server 8000
@@ -29,7 +29,7 @@ python -m http.server 8000
 
 ## 2. Describe the node
 
-A node is described in a YAML file that the runtime reads from the classpath. Create `src/main/resources/Spool.yaml`:
+A node is described in a YAML file that the runtime reads from the classpath. Create `src/main/resources/Spool.yaml`.
 
 ```yaml title="src/main/resources/Spool.yaml"
 infrastructure:
@@ -74,7 +74,7 @@ modules:
 
 The `infrastructure` block declares what the modules share. The event bus lives in memory, which is enough when every module runs in the same process. The inbox and the data lake are folders, relative to the directory where you start the program.
 
-The three modules do the work:
+The three modules do the work.
 
 - The **crawler** asks the URL for data once a minute (`scheduleMilliseconds`). Because the response is a JSON array, it splits it into one record per element. `sourceId` names the source, and that name ends up in the data lake path.
 - The **ingester** writes each record to the data lake as soon as the crawler has stored it.
@@ -84,7 +84,7 @@ The [DSL reference](/dsl/) lists every key.
 
 ## 3. Start the node
 
-Create the entry point of the program:
+Create the entry point of the program.
 
 ```java title="src/main/java/com/example/Main.java"
 package com.example;
@@ -105,13 +105,13 @@ public class Main {
 }
 ```
 
-The OpenTelemetry configuration is required. With only a service name, the node tries to send its telemetry to a collector on the default local address and logs `Failed to export` when there is none. Those messages do not affect the pipeline; [Operations](/operations/) explains how to point it at a real collector.
+The OpenTelemetry configuration is required. With only a service name, the node tries to send its telemetry to a collector on the default local address and logs `Failed to export` when there is none. Those messages do not affect the pipeline, and [Operations](/operations/) explains how to point it at a real collector.
 
 Run `Main` from your IDE or with Maven. The node keeps running until you stop it.
 
 ## 4. Check the result
 
-After a few seconds, the working directory contains this:
+After a few seconds, the working directory contains this.
 
 ```
 spool-data/
@@ -127,7 +127,7 @@ spool-data/
         └── d0beb143….json
 ```
 
-Each file is an envelope: one order, wrapped with the information Spool needs to trace it. The file name is its idempotency key, a SHA-256 of the source and the content, so the same order read twice is stored once.
+Each file is an envelope, which holds one order together with the information Spool needs to trace it. The file name is its idempotency key, a SHA-256 of the source and the content, so the same order read twice is stored once.
 
 ```json
 {
@@ -148,7 +148,7 @@ Each file is an envelope: one order, wrapped with the information Spool needs to
 }
 ```
 
-The payload is the original order encoded in Base64:
+The payload is the original order encoded in Base64.
 
 ```json
 {"order_id":"A-1003","customer":"Initech","amount":310.2,"currency":"EUR"}
@@ -156,7 +156,7 @@ The payload is the original order encoded in Base64:
 
 The inbox keeps one folder per state. An envelope starts in `CAPTURED` and moves to `PERSISTED` on the next run of the janitor after the ingester has written it. The data lake partitions records by the hour they were captured and by source. [Envelope lifecycle](/concepts/envelope-lifecycle/) explains each state.
 
-The node also answers on port 8080 with the health of its modules:
+The node also answers on port 8080 with the health of its modules.
 
 ```sh
 curl http://localhost:8080/spool/health

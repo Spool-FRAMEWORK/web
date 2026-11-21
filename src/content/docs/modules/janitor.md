@@ -5,14 +5,14 @@ sidebar:
   order: 3
 ---
 
-The janitor looks after the inbox. On every run it:
+The janitor looks after the inbox. On every run it does four things, in this order.
 
 1. Sets to `PERSISTED` the envelopes the ingester has written, from the `EnvelopePersisted` events received since the last run.
 2. Sets to `QUARANTINED` the envelopes in `EnvelopeQuarantined` events.
 3. Deletes the `PERSISTED` envelopes older than `millisecondsTTL`.
 4. Publishes again, as `EnvelopeStored`, the envelopes that have been in `CAPTURED` for longer than `millisecondsThreshold`, and increases their retry counter. When the counter reaches three, it sets them to `QUARANTINED` instead.
 
-Artifact: `janitor` 1.2.1, included in the runtime.
+The `janitor` artifact, version 1.2.1, is included in the runtime.
 
 ## Configuration
 

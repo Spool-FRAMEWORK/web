@@ -6,11 +6,11 @@ sidebar:
   order: 1
 ---
 
-A Spool node reports what it does in three ways: OpenTelemetry signals (traces, logs and metrics), a health endpoint on the node itself, and heartbeats to the [watchdog](/modules/watchdog/).
+A Spool node reports what it does in three ways. It sends OpenTelemetry signals (traces, logs and metrics), it answers on a health endpoint, and its modules send heartbeats to the [watchdog](/modules/watchdog/).
 
 ## Telemetry
 
-Spool exports traces, logs and metrics with OTLP over HTTP. Each endpoint is taken from the first place that defines it:
+Spool exports traces, logs and metrics with OTLP over HTTP. Each endpoint is taken from the first place that defines it.
 
 1. The `OpenTelemetryConfiguration` passed to the runtime.
 2. An environment variable.
@@ -35,7 +35,7 @@ SpoolRuntime.builder()
         .start();
 ```
 
-The service name works the other way round: when the `SERVICE_NAME` environment variable is set, it replaces the one in the code. OpenTelemetry is configured once per process, so if several runtimes are built in the same process, the first configuration is the one that applies.
+The service name works the other way round. When the `SERVICE_NAME` environment variable is set, it replaces the one in the code. OpenTelemetry is configured once per process, so if several runtimes are built in the same process, the first configuration is the one that applies.
 
 When nothing is listening at an endpoint, the node keeps working and logs `Failed to export` for that signal.
 
@@ -70,11 +70,11 @@ Grafana comes with a dashboard for the crawler, the ingester, the janitor and th
 | any module | `spool.module.started.total`, `spool.module.stopped.total`, `spool.module.degraded.total`, `spool.module.active` |
 | watchdog | `spool.watchdog.heartbeats.total`, `spool.watchdog.timeouts.total`, `spool.watchdog.zombies.total`, `spool.watchdog.check.duration`, `spool.watchdog.module.downtime`, `spool.watchdog.healthy.ratio`, `spool.watchdog.modules.active` |
 
-The janitor counts deleted and quarantined envelopes in the same metric, with a `reason` attribute: `expired` or `quarantine`.
+The janitor counts deleted and quarantined envelopes in the same metric, and tells them apart with the `reason` attribute, which is `expired` or `quarantine`.
 
 ## Node health
 
-Every node answers on port 8080 with the state of its modules:
+Every node answers on port 8080 with the state of its modules.
 
 | Path | Use |
 | --- | --- |
@@ -82,7 +82,7 @@ Every node answers on port 8080 with the state of its modules:
 | `/spool/health/live` | Liveness probe. |
 | `/spool/health/ready` | Readiness probe. |
 
-This is the start of the report of the node in [Build your first pipeline](/getting-started/first-pipeline/), whose crawler checks its inbox, its event bus and its source:
+This is the start of the report of the node in [Build your first pipeline](/getting-started/first-pipeline/), whose crawler checks its inbox, its event bus and its source.
 
 ```json
 {

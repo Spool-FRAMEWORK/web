@@ -5,7 +5,7 @@ sidebar:
   order: 2
 ---
 
-Every record that enters Spool travels inside an envelope. The envelope holds the original data, unchanged, together with what Spool needs to trace it: an idempotency key, the source it came from, a correlation identifier, its state, the number of retries and when it was captured.
+Every record that enters Spool travels inside an envelope. The envelope holds the original data, unchanged, together with what Spool needs to trace it. That is an idempotency key, the source it came from, a correlation identifier, its state, the number of retries and the time it was captured.
 
 ## States
 

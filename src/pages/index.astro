@@ -55,14 +55,14 @@ const guides = [
 				<h2 id="features">Features</h2>
 				<ul>
 					<li>Every step a record takes is published as an event, with a correlation identifier shared by all the events about that record.</li>
-					<li>Records that break a validation rule are not written to the data lake: they go to quarantine with the list of violations.</li>
-					<li>Storage and messaging are ports with interchangeable backends: the file system or S3 for storage, Kafka or memory for the event bus.</li>
+					<li>Records that break a validation rule are not written to the data lake. They go to quarantine with the list of violations.</li>
+					<li>Storage and messaging are ports with interchangeable backends, such as the file system or S3 for storage and Kafka or memory for the event bus.</li>
 					<li>Validation rules are plain Java classes, discovered at runtime.</li>
 					<li>Traces, metrics and logs are exported with OpenTelemetry.</li>
 				</ul>
 
 				<h2 id="getting-started">Getting started</h2>
-				<p>If you are new to Spool, start with these guides:</p>
+				<p>If you are new to Spool, start with these guides.</p>
 				<ul>
 					{guides.map((guide) => <li><a href={withBase(guide.path)}>{guide.label}</a></li>)}
 				</ul>
@@ -84,7 +84,7 @@ const guides = [
 			<aside class="side-column">
 				<section class="quickstart">
 					<h2>Quickstart</h2>
-					<p>Spool needs Java {site.requiredJavaVersion} or later. Add the runtime to your <code>pom.xml</code>:</p>
+					<p>Spool needs Java {site.requiredJavaVersion} or later. Add the runtime to your <code>pom.xml</code>.</p>
 					<Code code={mavenDependency} lang="xml" />
 				</section>
 				<section class="resources">

@@ -7,7 +7,7 @@ sidebar:
 
 The ingester listens for `EnvelopeStored`, reads the envelope from the inbox and runs the [validation rules](/modules/validator/) for its source. It writes the valid records to the data lake and publishes `EnvelopePersisted` for each one. Records that break a rule are not written.
 
-Artifact: `ingester` 1.2.0, included in the runtime.
+The `ingester` artifact, version 1.2.0, is included in the runtime.
 
 ## Reactive or in batches
 
@@ -27,7 +27,7 @@ Artifact: `ingester` 1.2.0, included in the runtime.
 
 ## Data lake layout
 
-The ingester writes to the `bronze` layer of the data lake, one file per record, under a path built from the capture time, the source and, when the crawler maps records to a class, the event type:
+The ingester writes to the `bronze` layer of the data lake, one file per record, under a path built from the capture time, the source and, when the crawler maps records to a class, the event type.
 
 ```
 bronze/year=2026/month=11/day=21/hour=20/source=orders-api/<idempotency key>.json

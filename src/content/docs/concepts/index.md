@@ -6,7 +6,7 @@ sidebar:
   order: 1
 ---
 
-Spool takes data from external sources to a data mart in separate steps. Each step is a module, and modules never call each other: one publishes an event when it finishes its work, and the next one reacts to it. That is what makes every record traceable, and what lets the same pipeline run in one process or across several machines.
+Spool takes data from external sources to a data mart in separate steps. Each step is a module, and modules never call each other. One publishes an event when it finishes its work, and the next one reacts to it. That is what makes every record traceable, and what lets the same pipeline run in one process or across several machines.
 
 ## Nodes and modules
 
@@ -24,9 +24,9 @@ The crawler, the ingester and the janitor can be declared in a descriptor. The m
 
 ## Shared infrastructure
 
-Modules share three pieces of infrastructure, each one behind a port with interchangeable [backends](/ports/):
+Modules share three pieces of infrastructure, each one behind a port with interchangeable [backends](/ports/).
 
-- The **event bus** carries the events between modules. With the in-memory bus all modules must run in the same node; with Kafka they can run in different ones.
+- The **event bus** carries the events between modules. With the in-memory bus all modules must run in the same node. With Kafka they can run in different ones.
 - The **inbox** holds each captured record, wrapped in an envelope, until it is safely in the data lake.
 - The **data lake** stores the records, partitioned by capture time and source.
 

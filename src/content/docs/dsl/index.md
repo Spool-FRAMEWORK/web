@@ -6,7 +6,7 @@ sidebar:
   order: 1
 ---
 
-A descriptor is a YAML file that declares one node: the infrastructure it uses and the modules it runs. The runtime reads it from the classpath:
+A descriptor is a YAML file that declares one node, with the infrastructure it uses and the modules it runs. The runtime reads it from the classpath.
 
 ```java
 SpoolRuntime.builder()
@@ -16,7 +16,7 @@ SpoolRuntime.builder()
         .start();
 ```
 
-This page describes the format read by `dsl` 1.4.0. Values are taken literally: this version does not replace variables or environment references.
+This page describes the format read by `dsl` 1.4.0. Values are taken literally, because this version does not replace variables or environment references.
 
 ## Structure
 
@@ -46,7 +46,7 @@ Both `infrastructure` and `modules` are required. Each entry of `modules` has ex
 
 Each component has a `type`, which names the plugin, and an optional `configuration` with the plugin's settings. The available types and their settings are in [Ports and backends](/ports/).
 
-A component is only required by the modules that use it:
+A component is only required by the modules that use it.
 
 | Module | Uses |
 | --- | --- |
@@ -69,9 +69,9 @@ A component is only required by the modules that use it:
 | Key | Required | Meaning |
 | --- | --- | --- |
 | `type` | Yes | Source plugin, for example `HTTP`. |
-| `configuration` | Depends on the plugin | Settings of the plugin. For `HTTP`: `url` and `sourceId`. |
+| `configuration` | Depends on the plugin | Settings of the plugin. `HTTP` needs `url` and `sourceId`. |
 | `configuration.scheduleMilliseconds` | No | For `POLL` crawlers, time between reads. Missing or `0` means read once. |
-| `mediaType` | Yes | How the response is split into records: `JSON`, `JSON_ARRAY`, `EVENT_CLASS`, `EVENT_CLASS_ARRAY` or `PDF`. |
+| `mediaType` | Yes | How the response is split into records. It can be `JSON`, `JSON_ARRAY`, `EVENT_CLASS`, `EVENT_CLASS_ARRAY` or `PDF`. |
 | `rootPath` | No | Path to the part of the response that holds the records, such as `data.items`. |
 | `enrichment` | No | List of rules that copy a value from the response into every record. Each rule has `source`, the path of the value, and optionally `target`, its name in the record. |
 
@@ -79,11 +79,11 @@ A component is only required by the modules that use it:
 
 | Key | Required | Meaning |
 | --- | --- | --- |
-| `namingConvention` | Yes | How field names are written in the source: `SNAKE_CASE`, `CAMEL_CASE`, `PASCAL_CASE` or `KEBAB_CASE`. |
+| `namingConvention` | Yes | How field names are written in the source. It can be `SNAKE_CASE`, `CAMEL_CASE`, `PASCAL_CASE` or `KEBAB_CASE`. |
 | `domainMappingList` | No | Names of the record classes, which must be in the `events` package. |
 | `attributeList` | No | Fields of the record used as partition keys in the data lake. |
 
-Both lists accept plain names or objects with a `value` key:
+Both lists accept plain names or objects with a `value` key.
 
 ```yaml
 domainMappingList:
@@ -96,7 +96,7 @@ domainMappingList:
 | Key | Required | Meaning |
 | --- | --- | --- |
 | `id` | Yes | Name of the module. |
-| `type` | No | `REACTIVE` writes each record as it arrives; `FLUSH` writes in batches. The default is `REACTIVE`. |
+| `type` | No | `REACTIVE` writes each record as it arrives and `FLUSH` writes in batches. The default is `REACTIVE`. |
 | `configuration.size` | No | For `FLUSH`, number of records per batch. The default is 100. |
 | `configuration.milliseconds` | No | For `FLUSH`, maximum time a record waits in the batch. |
 
@@ -169,7 +169,7 @@ modules:
 
 ## Errors
 
-A descriptor that cannot be read stops `build()`. The message names the key with its full path and says what was expected, for example:
+A descriptor that cannot be read stops `build()`. The message names the key with its full path and says what was expected.
 
 ```
 Invalid descriptor /Spool.yaml: modules[0].crawler.source is required

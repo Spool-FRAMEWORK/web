@@ -7,7 +7,7 @@ sidebar:
 
 This pipeline asks SEC EDGAR, the public filing system of the US Securities and Exchange Commission, for the 8-K reports filed the day before. Companies file an 8-K to announce events such as a change of executives or an acquisition. Each filing becomes a record in the data lake.
 
-Code: [Spool-FRAMEWORK-Labs/sec-pipeline](https://github.com/Spool-FRAMEWORK-Labs/sec-pipeline), with Spool 1.4.0.
+The code is in [Spool-FRAMEWORK-Labs/sec-pipeline](https://github.com/Spool-FRAMEWORK-Labs/sec-pipeline) and uses Spool 1.4.0.
 
 ## What it shows
 
@@ -66,16 +66,16 @@ With `scheduleMilliseconds: 0` the crawler reads the source once when the node s
 
 ## The source
 
-The `SEC_DAILY_INDEX` plugin is two classes:
+The `SEC_DAILY_INDEX` plugin is two classes.
 
 - `SECDailyIndexPollSourceProvider` is the plugin. It carries `@SpoolPlugin(PollSourceProvider.class)`, answers to the name `SEC_DAILY_INDEX` and creates the source with the `url` of the descriptor.
-- `SECDailyIndexPollSource` does the work. It asks the search index for the 8-K filings of the previous day, New York time, and turns each result into a flat object under `entries`, with the fields `SecFiling` expects: `accession_no`, `cik`, `entity_name`, `form_type`, `file_date` and a `link` to the filing.
+- `SECDailyIndexPollSource` does the work. It asks the search index for the 8-K filings of the previous day, New York time, and turns each result into a flat object under `entries` with the fields `SecFiling` expects, which are `accession_no`, `cik`, `entity_name`, `form_type`, `file_date` and a `link` to the filing.
 
-The source identifies itself as `SEC-EDGAR-Daily-Api`, and that is the name used in the data lake; the `sourceId` in the descriptor is not read by this plugin.
+The source identifies itself as `SEC-EDGAR-Daily-Api`, and that is the name used in the data lake. This plugin does not read the `sourceId` of the descriptor.
 
 ## The record class
 
-The crawler resolves `SecFiling` in the `events` package and reads every entry with snake case names:
+The crawler resolves `SecFiling` in the `events` package and reads every entry with snake case names.
 
 ```java title="src/main/java/events/SecFiling.java"
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -116,7 +116,7 @@ public record SecFiling(
 
 1. Clone the repository and open `src/main/resources/pipeline.yaml`. Change the two `path` values to folders on your machine, and remove the `watchdog` line if you are not running one.
 2. EDGAR rejects requests that do not identify who makes them. In `SECDailyIndexPollSource`, set the `User-Agent` header to your application name and a contact email.
-3. Build and run:
+3. Build the project and run it.
 
 ```sh
 mvn package
@@ -125,13 +125,13 @@ java -jar target/sec-pipeline.jar
 
 ## The result
 
-A run on 21 November 2026 captured 100 filings from the day before. Each one is an envelope in the data lake, under a partition that includes the source and the event type:
+A run on 21 November 2026 captured 100 filings from the day before. Each one is an envelope in the data lake, under a partition that includes the source and the event type.
 
 ```
 datalake/bronze/year=2026/month=11/day=21/hour=20/source=SEC-EDGAR-Daily-Api/eventType=SecFiling/<idempotency key>.json
 ```
 
-Decoded, the payload of one of them starts like this:
+Decoded, the payload of one of them starts like this.
 
 ```json
 {
