@@ -4,7 +4,7 @@ Public website of [Spool](https://github.com/Spool-FRAMEWORK): the landing page 
 
 ## Requirements
 
-Node.js 22 or later.
+Node.js, in the version written in `.nvmrc`.
 
 ## Commands
 
@@ -21,6 +21,10 @@ Node.js 22 or later.
 - `src/content/docs/index.mdx`: the landing page.
 - `src/components/`: Astro and React components used by the pages.
 - `public/`: static files served as they are.
+
+## Continuous integration
+
+`.github/workflows/build.yml` installs the dependencies and runs `npm run build` on every push and pull request, so a broken page or an internal link to a page that does not exist fails the build.
 
 ## Configuration
 
