@@ -6,6 +6,11 @@
 	--spool-button: #0b5cad;
 	--spool-button-hover: #08447f;
 	--spool-button-outline-text: #0b5cad;
+	--spool-bronze: #a0602a;
+	--spool-bronze-fill: #f4e4d4;
+	--spool-gold: #a87b06;
+	--spool-gold-fill: #f8edc6;
+	--spool-surface: #ffffff;
 
 	--sl-color-accent-low: #10263f;
 	--sl-color-accent: #3b8bea;
@@ -25,6 +30,11 @@
 	--spool-button: #2f74c0;
 	--spool-button-hover: #3b82d1;
 	--spool-button-outline-text: #8dbef2;
+	--spool-bronze: #d9925a;
+	--spool-bronze-fill: #3b2a1c;
+	--spool-gold: #e3b742;
+	--spool-gold-fill: #3a3117;
+	--spool-surface: #1f2630;
 }
 
 header.header {
@@ -164,5 +174,78 @@ header.header {
 .spool-diagram .boundary-label {
 	fill: var(--sl-color-text-accent);
 	font-size: 15px;
+	font-weight: 700;
+}
+
+.spool-diagram .band {
+	fill: var(--spool-band-background);
+	stroke: var(--sl-color-accent);
+	stroke-width: 1.5;
+	stroke-dasharray: 8 5;
+}
+.spool-diagram .surface {
+	fill: var(--spool-surface);
+	stroke: currentColor;
+	stroke-width: 1.5;
+}
+.spool-diagram .ink {
+	fill: none;
+	stroke: var(--sl-color-gray-3);
+	stroke-width: 2;
+	stroke-linecap: round;
+}
+.spool-diagram .bronze {
+	fill: var(--spool-bronze-fill);
+	stroke: var(--spool-bronze);
+	stroke-width: 2;
+}
+.spool-diagram .bronze-text {
+	fill: var(--spool-bronze);
+	font-weight: 700;
+}
+.spool-diagram .gold {
+	fill: var(--spool-gold-fill);
+	stroke: var(--spool-gold);
+	stroke-width: 2;
+}
+.spool-diagram .gold-text {
+	fill: var(--spool-gold);
+	font-weight: 700;
+}
+.spool-diagram .dot {
+	fill: var(--sl-color-accent);
+}
+.spool-diagram .dot-muted {
+	fill: var(--spool-gold);
+	opacity: 0.55;
+}
+.spool-diagram .bar {
+	fill: var(--sl-color-accent);
+	opacity: 0.8;
+}
+.spool-diagram .chip {
+	fill: var(--sl-color-accent-low);
+	stroke: var(--sl-color-accent);
+	stroke-width: 1.2;
+}
+.spool-diagram .chip-text {
+	fill: var(--sl-color-text-accent);
+	font-size: 12px;
+	font-weight: 600;
+}
+.spool-diagram .flow {
+	fill: none;
+	stroke: var(--sl-color-accent);
+	stroke-width: 2.5;
+}
+.spool-diagram .lineage {
+	fill: none;
+	stroke: var(--spool-gold);
+	stroke-width: 2;
+	stroke-dasharray: 2 6;
+	stroke-linecap: round;
+}
+.spool-diagram .stage-title {
+	font-size: 17px;
 	font-weight: 700;
 }

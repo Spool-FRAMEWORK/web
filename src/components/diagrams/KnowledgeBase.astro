@@ -1,74 +1,109 @@
+---
+const bars = [20, 34, 12, 28, 40, 16, 30, 24, 10, 36];
+const points = [
+	{ x: 662, y: 108, muted: false },
+	{ x: 684, y: 122, muted: true },
+	{ x: 708, y: 104, muted: false },
+	{ x: 734, y: 118, muted: true },
+	{ x: 668, y: 142, muted: true },
+	{ x: 694, y: 150, muted: false },
+	{ x: 722, y: 140, muted: false },
+	{ x: 744, y: 158, muted: true },
+	{ x: 676, y: 172, muted: false },
+	{ x: 704, y: 178, muted: true },
+	{ x: 730, y: 176, muted: false },
+];
+const tags = [100, 300, 500, 700, 900];
+---
+
 <figure class="spool-diagram">
 	<svg
-		viewBox="0 0 960 270"
+		viewBox="0 0 1000 365"
 		role="img"
-		aria-label="Two crawlers read issues and documents from Linear and store them in the inbox. The ingester writes them to the bronze layer of the data lake. The mounter turns them into Markdown, splits them into chunks, asks an embedding model for their vectors and writes the chunks to Qdrant as the gold layer, with the source metadata in each payload. The assistant, outside Spool, searches Qdrant and answers with the sources."
+		aria-label="Issues and documents from Linear are captured as envelopes into the bronze layer. The mounter turns each one into Markdown chunks and embeddings and stores them in Qdrant as the gold layer. The assistant searches Qdrant and answers citing its sources. The correlation id, source, URL and title travel with each record from Linear to the answer."
 	>
 		<defs>
-			<marker id="kb-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-				<path class="arrowhead" d="M0,0 L10,5 L0,10 z" />
+			<marker id="kb-flow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+				<path class="arrowhead-event" d="M0,0 L10,5 L0,10 z" />
 			</marker>
 		</defs>
 
-		<rect class="boundary" x="132" y="12" width="708" height="246" rx="10" />
-		<text class="boundary-label" x="146" y="32">Spool</text>
+		<rect class="band" x="214" y="22" width="572" height="276" rx="18" />
+		<text class="boundary-label" x="234" y="48">Spool</text>
 
-		<rect class="external" x="10" y="44" width="100" height="56" rx="6" />
-		<text class="name" x="60" y="77" text-anchor="middle">Linear</text>
+		<rect class="surface" x="44" y="70" width="86" height="52" rx="8" />
+		<circle class="ink" cx="62" cy="88" r="7" />
+		<line class="ink" x1="76" y1="88" x2="118" y2="88" />
+		<line class="ink" x1="56" y1="106" x2="104" y2="106" />
+		<path class="surface" d="M84,104 H128 L144,120 V186 H84 Z" />
+		<polyline class="ink" points="128,105 128,120 143,120" />
+		<line class="ink" x1="94" y1="138" x2="132" y2="138" />
+		<line class="ink" x1="94" y1="152" x2="134" y2="152" />
+		<line class="ink" x1="94" y1="166" x2="120" y2="166" />
+		<text class="stage-title" x="100" y="232" text-anchor="middle">Linear</text>
+		<text class="small" x="100" y="254" text-anchor="middle">issues and documents</text>
 
-		<rect class="box" x="150" y="44" width="130" height="56" rx="6" />
-		<text class="name" x="215" y="68" text-anchor="middle">crawlers</text>
-		<text class="small" x="215" y="88" text-anchor="middle">issues, documents</text>
+		<line class="flow" x1="156" y1="140" x2="230" y2="140" marker-end="url(#kb-flow)" />
 
-		<rect class="box" x="330" y="44" width="110" height="56" rx="6" />
-		<text class="name" x="385" y="77" text-anchor="middle">ingester</text>
+		<rect class="surface" x="256" y="62" width="46" height="30" rx="3" />
+		<polyline class="ink" points="256,63 279,79 302,63" />
+		<rect class="surface" x="302" y="80" width="46" height="30" rx="3" />
+		<polyline class="ink" points="302,81 325,97 348,81" />
+		<path class="bronze" d="M248,130 V184 A52,12 0 0 0 352,184 V130" />
+		<ellipse class="bronze" cx="300" cy="130" rx="52" ry="12" />
+		<text class="bronze-text" x="300" y="168" text-anchor="middle">bronze</text>
+		<text class="stage-title" x="300" y="232" text-anchor="middle">Capture</text>
+		<text class="small" x="300" y="254" text-anchor="middle">crawlers and ingester</text>
 
-		<rect class="box" x="490" y="44" width="180" height="56" rx="6" />
-		<text class="name" x="580" y="68" text-anchor="middle">mounter</text>
-		<text class="small" x="580" y="88" text-anchor="middle">Markdown, chunks</text>
+		<line class="flow" x1="366" y1="140" x2="430" y2="140" marker-end="url(#kb-flow)" />
 
-		<rect class="store" x="710" y="44" width="116" height="56" rx="4" />
-		<text class="name" x="768" y="68" text-anchor="middle">Qdrant</text>
-		<text class="small" x="768" y="88" text-anchor="middle">gold layer</text>
+		<rect class="surface" x="440" y="62" width="44" height="56" rx="5" />
+		<line class="ink" x1="448" y1="78" x2="476" y2="78" />
+		<line class="ink" x1="448" y1="90" x2="476" y2="90" />
+		<line class="ink" x1="448" y1="102" x2="468" y2="102" />
+		<line class="flow" x1="488" y1="90" x2="504" y2="90" marker-end="url(#kb-flow)" />
+		<rect class="chip" x="512" y="64" width="50" height="14" rx="4" />
+		<rect class="chip" x="512" y="84" width="50" height="14" rx="4" />
+		<rect class="chip" x="512" y="104" width="50" height="14" rx="4" />
+		<line class="flow" x1="537" y1="122" x2="526" y2="142" marker-end="url(#kb-flow)" />
+		{bars.map((height, index) => (
+			<rect class="bar" x={452 + index * 10} y={196 - height} width="6" height={height} rx="1.5" />
+		))}
+		<text class="stage-title" x="500" y="232" text-anchor="middle">Prepare</text>
+		<text class="small" x="500" y="254" text-anchor="middle">Markdown, chunks, embeddings</text>
 
-		<rect class="external" x="860" y="44" width="92" height="56" rx="6" />
-		<text class="name" x="906" y="77" text-anchor="middle">assistant</text>
+		<line class="flow" x1="568" y1="140" x2="630" y2="140" marker-end="url(#kb-flow)" />
 
-		<rect class="store" x="230" y="176" width="110" height="50" rx="4" />
-		<text class="name" x="285" y="206" text-anchor="middle">inbox</text>
+		<path class="gold" d="M640,80 V186 A60,14 0 0 0 760,186 V80" />
+		<ellipse class="gold" cx="700" cy="80" rx="60" ry="14" />
+		{points.map((point) => (
+			<circle class={point.muted ? 'dot-muted' : 'dot'} cx={point.x} cy={point.y} r="4.5" />
+		))}
+		<text class="gold-text" x="700" y="85" text-anchor="middle">Qdrant</text>
+		<text class="stage-title" x="700" y="232" text-anchor="middle">Gold layer</text>
+		<text class="small" x="700" y="254" text-anchor="middle">vectors with their sources</text>
 
-		<rect class="store" x="390" y="176" width="130" height="50" rx="4" />
-		<text class="name" x="455" y="198" text-anchor="middle">data lake</text>
-		<text class="small" x="455" y="216" text-anchor="middle">bronze layer</text>
+		<line class="flow" x1="770" y1="140" x2="830" y2="140" marker-end="url(#kb-flow)" />
+		<text class="small" x="812" y="128" text-anchor="middle">search</text>
 
-		<rect class="external" x="570" y="176" width="170" height="50" rx="6" />
-		<text class="name" x="655" y="206" text-anchor="middle">embedding model</text>
+		<path class="surface" d="M848,62 H952 A10,10 0 0 1 962,72 V146 A10,10 0 0 1 952,156 H884 L870,170 V156 H848 A10,10 0 0 1 838,146 V72 A10,10 0 0 1 848,62 Z" />
+		<line class="ink" x1="852" y1="82" x2="946" y2="82" />
+		<line class="ink" x1="852" y1="96" x2="938" y2="96" />
+		<line class="ink" x1="852" y1="110" x2="918" y2="110" />
+		<rect class="chip" x="852" y="124" width="54" height="20" rx="10" />
+		<text class="chip-text" x="879" y="138" text-anchor="middle">DEV-42</text>
+		<rect class="chip" x="912" y="124" width="42" height="20" rx="10" />
+		<text class="chip-text" x="933" y="138" text-anchor="middle">Spec</text>
+		<text class="stage-title" x="900" y="232" text-anchor="middle">Answer</text>
+		<text class="small" x="900" y="254" text-anchor="middle">with its sources</text>
 
-		<line class="edge" x1="110" y1="72" x2="147" y2="72" marker-end="url(#kb-arrow)" />
-		<text class="small" x="70" y="124" text-anchor="middle">polled</text>
-
-		<line class="edge" x1="240" y1="100" x2="268" y2="173" marker-end="url(#kb-arrow)" />
-		<line class="edge" x1="305" y1="176" x2="355" y2="103" marker-end="url(#kb-arrow)" />
-		<text class="small" x="296" y="136" text-anchor="middle">envelopes</text>
-
-		<line class="edge" x1="410" y1="100" x2="440" y2="173" marker-end="url(#kb-arrow)" />
-		<line class="edge" x1="480" y1="176" x2="530" y2="103" marker-end="url(#kb-arrow)" />
-		<text class="small" x="462" y="136" text-anchor="middle">records</text>
-
-		<line class="edge" x1="640" y1="103" x2="640" y2="173" marker-start="url(#kb-arrow)" marker-end="url(#kb-arrow)" />
-		<text class="small" x="648" y="142">vectors</text>
-
-		<line class="edge" x1="670" y1="72" x2="707" y2="72" marker-end="url(#kb-arrow)" />
-
-		<text class="small" x="768" y="124" text-anchor="middle">each point keeps</text>
-		<text class="small" x="768" y="142" text-anchor="middle">correlation id,</text>
-		<text class="small" x="768" y="160" text-anchor="middle">source, URL, title</text>
-
-		<line class="edge" x1="857" y1="72" x2="829" y2="72" marker-end="url(#kb-arrow)" />
-		<text class="small" x="906" y="124" text-anchor="middle">searches</text>
-		<text class="small" x="906" y="142" text-anchor="middle">and cites</text>
+		<line class="lineage" x1="60" y1="318" x2="950" y2="318" />
+		{tags.map((x) => (
+			<polygon class="gold" points={`${x - 14},310 ${x + 8},310 ${x + 15},318 ${x + 8},326 ${x - 14},326`} />
+		))}
+		<text class="small" x="500" y="352" text-anchor="middle">The correlation id, source, URL and title travel with each record, from Linear to the answer</text>
 	</svg>
 	<figcaption>
-		Everything inside the dashed line runs in Spool, from reading Linear to storing the chunks in Qdrant. Each chunk keeps the metadata of the record it comes from, so the assistant can name the issue or document behind every answer.
+		Everything inside the dashed line runs in Spool. The assistant only searches the gold layer, and because each chunk keeps the metadata of its record, every answer can point to the issue or document behind it.
 	</figcaption>
 </figure>
