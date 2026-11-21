@@ -93,7 +93,9 @@ header.header {
 	font-family: var(--__sl-font);
 }
 .spool-diagram figcaption {
-	margin-top: 0.5rem;
+	max-width: 46rem;
+	margin: 0.5rem auto 0;
+	text-align: center;
 	font-size: var(--sl-text-sm);
 	color: var(--sl-color-gray-3);
 }
