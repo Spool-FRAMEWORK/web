@@ -74,7 +74,7 @@ const guides = [
 					</thead>
 					<tbody>
 						{modules.map((module) => (
-							<tr><td><a href={withBase('modules/')}>{module.name}</a></td><td>{module.summary}</td></tr>
+							<tr><td><a href={withBase(`modules/${module.name}/`)}>{module.name}</a></td><td>{module.summary}</td></tr>
 						))}
 					</tbody>
 				</table>
