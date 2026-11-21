@@ -2,6 +2,10 @@
 	--spool-header-background: #1b2430;
 	--spool-band-background: #f2f4f5;
 	--spool-border: #d5dbdb;
+	--spool-code-chrome: #f6f8fa;
+	--spool-button: #0b5cad;
+	--spool-button-hover: #08447f;
+	--spool-button-outline-text: #0b5cad;
 
 	--sl-color-accent-low: #10263f;
 	--sl-color-accent: #3b8bea;
@@ -15,8 +19,12 @@
 }
 
 :root[data-theme='dark'] {
-	--spool-band-background: #1c222b;
+	--spool-band-background: #151a21;
 	--spool-border: #2f3946;
+	--spool-code-chrome: #161b22;
+	--spool-button: #2f74c0;
+	--spool-button-hover: #3b82d1;
+	--spool-button-outline-text: #8dbef2;
 }
 
 header.header {
@@ -44,7 +52,22 @@ header.header {
 	border-radius: 0;
 }
 
+.sl-link-button.primary {
+	background-color: var(--spool-button);
+	border-color: var(--spool-button);
+	color: #ffffff;
+}
+.sl-link-button.primary:hover {
+	background-color: var(--spool-button-hover);
+	border-color: var(--spool-button-hover);
+	color: #ffffff;
+}
 .sl-link-button.secondary {
-	border-color: var(--sl-color-accent);
-	color: var(--sl-color-accent);
+	background-color: transparent;
+	border-color: var(--spool-button-outline-text);
+	color: var(--spool-button-outline-text);
+}
+.sl-link-button.secondary:hover {
+	background-color: var(--spool-band-background);
+	color: var(--spool-button-outline-text);
 }

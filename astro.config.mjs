@@ -16,6 +16,7 @@ const sections = [
 ];
 
 export default defineConfig({
+	devToolbar: { enabled: false },
 	site: process.env.SITE_URL,
 	base: process.env.SITE_BASE_PATH,
 	integrations: [
@@ -25,7 +26,30 @@ export default defineConfig({
 			social: [{ icon: 'github', label: 'GitHub', href: site.githubUrl }],
 			editLink: { baseUrl: `${site.webRepositoryUrl}/edit/develop/` },
 			customCss: ['./src/styles/theme.css'],
-			components: { Header: './src/components/Header.astro' },
+			components: {
+				Header: './src/components/Header.astro',
+				Footer: './src/components/Footer.astro',
+			},
+			expressiveCode: {
+				themes: ['github-dark-default', 'github-light'],
+				defaultProps: { frame: 'code' },
+				styleOverrides: {
+					borderRadius: '0.375rem',
+					borderColor: 'var(--spool-border)',
+					frames: {
+						shadowColor: 'transparent',
+						frameBoxShadowCssValue: 'none',
+						editorTabBarBackground: 'var(--spool-code-chrome)',
+						editorActiveTabBackground: 'var(--spool-code-chrome)',
+						editorActiveTabIndicatorTopColor: 'transparent',
+						editorActiveTabIndicatorBottomColor: 'var(--sl-color-accent)',
+						editorTabBarBorderBottomColor: 'var(--spool-border)',
+						terminalTitlebarBackground: 'var(--spool-code-chrome)',
+						terminalTitlebarBorderBottomColor: 'var(--spool-border)',
+						terminalTitlebarDotsOpacity: '0',
+					},
+				},
+			},
 			plugins: [starlightLinksValidator()],
 			sidebar: sections.map(({ label, directory }) => ({
 				label,

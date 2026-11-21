@@ -1,5 +1,9 @@
 export const site = {
 	name: 'Spool',
+	author: 'Javier Castilla',
+	origin: 'final-year project in Computer Engineering at the University of Las Palmas de Gran Canaria',
+	license: { name: 'Apache License 2.0', url: 'https://www.apache.org/licenses/LICENSE-2.0' },
+	mavenCentralUrl: 'https://central.sonatype.com/namespace/io.github.spool-framework',
 	description:
 		'Spool is a Java framework for building data pipelines that take data from external sources to a data mart.',
 	githubUrl: 'https://github.com/Spool-FRAMEWORK',
@@ -24,9 +28,9 @@ export const site = {
 };
 
 export const mavenDependency = `<dependency>
-    <groupId>${site.latestRelease.groupId}</groupId>
-    <artifactId>${site.latestRelease.artifactId}</artifactId>
-    <version>${site.latestRelease.version}</version>
+  <groupId>${site.latestRelease.groupId}</groupId>
+  <artifactId>${site.latestRelease.artifactId}</artifactId>
+  <version>${site.latestRelease.version}</version>
 </dependency>`;
 
 export const headerLinks = [

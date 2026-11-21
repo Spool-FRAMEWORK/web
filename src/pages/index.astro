@@ -1,5 +1,6 @@
 ---
 import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+import { Code } from '@astrojs/starlight/components';
 import { mavenDependency, site, withBase } from '../data/site';
 
 
@@ -84,7 +85,7 @@ const guides = [
 				<section class="quickstart">
 					<h2>Quickstart</h2>
 					<p>Spool needs Java {site.requiredJavaVersion} or later. Add the runtime to your <code>pom.xml</code>:</p>
-					<pre><code>{mavenDependency}</code></pre>
+					<Code code={mavenDependency} lang="xml" />
 				</section>
 				<section class="resources">
 					<h2>Resources</h2>
@@ -95,7 +96,6 @@ const guides = [
 			</aside>
 		</div>
 
-		<p class="license">Spool is open source under the Apache 2.0 license.</p>
 	</div>
 </StarlightPage>
 
@@ -152,7 +152,7 @@ const guides = [
 		margin-top: 2rem;
 	}
 	.main-column {
-		flex: 999 1 32rem;
+		flex: 1 1 30rem;
 		min-width: 0;
 	}
 	.main-column > :global(* + *) {
@@ -188,9 +188,8 @@ const guides = [
 		background-color: var(--spool-band-background);
 	}
 	.side-column {
-		flex: 1 1 20rem;
+		flex: 0 1 27rem;
 		min-width: 0;
-		max-width: 26rem;
 		display: flex;
 		flex-direction: column;
 		gap: 2rem;
@@ -206,23 +205,11 @@ const guides = [
 	.quickstart > * + * {
 		margin-top: 0.75rem;
 	}
+	.quickstart :global(pre) {
+		font-size: 0.8rem;
+	}
 	.quickstart p {
 		font-size: var(--sl-text-sm);
-	}
-	.quickstart pre {
-		background-color: var(--spool-band-background);
-		border-radius: 0.25rem;
-		padding: 0.875rem;
-		overflow-x: auto;
-		font-size: var(--sl-text-xs);
-		line-height: 1.6;
-	}
-	.license {
-		margin-top: 4rem !important;
-		padding-top: 1.5rem;
-		border-top: 1px solid var(--spool-border);
-		font-size: var(--sl-text-sm);
-		color: var(--sl-color-gray-3);
 	}
 	.resources {
 		display: flex;

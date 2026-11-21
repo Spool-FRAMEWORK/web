@@ -1,0 +1,110 @@
+---
+import DefaultFooter from '@astrojs/starlight/components/Footer.astro';
+import { site, withBase } from '../data/site';
+
+const documentationLinks = [
+	{ label: 'Install', href: withBase('getting-started/') },
+	{ label: 'Build your first pipeline', href: withBase('getting-started/first-pipeline/') },
+	{ label: 'Modules', href: withBase('modules/') },
+	{ label: 'Descriptor reference', href: withBase('dsl/') },
+];
+
+const projectLinks = [
+	{ label: 'Source code on GitHub', href: site.githubUrl },
+	{ label: 'Example pipelines', href: site.examplesUrl },
+	{ label: 'Maven Central', href: site.mavenCentralUrl },
+];
+
+const year = new Date().getFullYear();
+---
+
+<DefaultFooter />
+
+<div class="site-footer">
+	<div class="columns">
+		<div class="about">
+			<a class="brand" href={withBase('')}>{site.name}</a>
+			<p>Created by {site.author} as a {site.origin}.</p>
+		</div>
+		<nav aria-label="Documentation">
+			<h2>Documentation</h2>
+			{documentationLinks.map((link) => <a href={link.href}>{link.label}</a>)}
+		</nav>
+		<nav aria-label="Project">
+			<h2>Project</h2>
+			{projectLinks.map((link) => <a href={link.href}>{link.label}</a>)}
+		</nav>
+	</div>
+	<div class="legal">
+		<span>© {year} {site.author}</span>
+		<span>Released under the <a href={site.license.url}>{site.license.name}</a></span>
+	</div>
+</div>
+
+<style>
+	.site-footer {
+		margin-top: 4rem;
+		padding-block: 2.5rem 2rem;
+		background-color: var(--spool-header-background);
+		box-shadow: 0 0 0 100vmax var(--spool-header-background);
+		clip-path: inset(0 -100vmax);
+		position: relative;
+		z-index: 2;
+		color: #aab3bf;
+		font-size: var(--sl-text-sm);
+	}
+	.columns {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 2rem 3rem;
+	}
+	.about {
+		flex: 2 1 16rem;
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+	}
+	.about p {
+		margin: 0;
+		max-width: 28rem;
+		line-height: 1.6;
+	}
+	.brand {
+		color: #ffffff;
+		font-size: var(--sl-text-xl);
+		font-weight: 700;
+		text-decoration: none;
+	}
+	nav {
+		flex: 1 1 10rem;
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+	}
+	h2 {
+		margin: 0 0 0.25rem;
+		color: #ffffff;
+		font-size: var(--sl-text-sm);
+		font-weight: 600;
+	}
+	a {
+		color: #d5dbe3;
+		text-decoration: none;
+	}
+	a:hover {
+		color: #ffffff;
+		text-decoration: underline;
+	}
+	.legal {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: space-between;
+		gap: 0.5rem 2rem;
+		margin-top: 2rem;
+		padding-top: 1.25rem;
+		border-top: 1px solid #2f3946;
+	}
+	.legal a {
+		text-decoration: underline;
+	}
+</style>
