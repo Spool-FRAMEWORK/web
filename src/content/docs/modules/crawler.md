@@ -44,7 +44,7 @@ source:
 `eventMapping` says how to read each record as a Java class:
 
 - `namingConvention` is how the fields are written in the source: `SNAKE_CASE`, `CAMEL_CASE`, `PASCAL_CASE` or `KEBAB_CASE`. It is required.
-- `domainMappingList` lists the classes of your records. Each class must be in the `events` package and implement `software.spool.core.model.Event`. When a class is listed, the data lake partition includes `eventType=<class>`.
+- `domainMappingList` lists the classes of your records. Each class must be in the `events` package and implement `software.spool.core.model.Event`. When a class is listed, the data lake partition includes `eventType=<class>`. With several classes, each record gets the first one that can read it, so keep one class per crawler unless the classes reject each other's records.
 - `attributeList` names fields of the record that become partition keys in the data lake, as `field=value`. A record without one of those fields cannot be partitioned and fails with a `PartitionKeyException`.
 
 ## Errors

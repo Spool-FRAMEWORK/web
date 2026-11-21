@@ -14,6 +14,7 @@ const sections = [
 	{ label: 'Ports and backends', directory: 'ports' },
 	{ label: 'Operations', directory: 'operations' },
 	{ label: 'Examples', directory: 'examples' },
+	{ label: 'Use cases', directory: 'use-cases' },
 ];
 
 export default defineConfig({
