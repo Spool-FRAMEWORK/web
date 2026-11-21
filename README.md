@@ -26,9 +26,13 @@ Node.js, in the version written in `.nvmrc`.
 
 `.github/workflows/build.yml` installs the dependencies and runs `npm run build` on every push and pull request, so a broken page or an internal link to a page that does not exist fails the build.
 
+## Deployment
+
+`.github/workflows/deploy-pages.yml` publishes the site to GitHub Pages on every push to `develop`. It builds with the repository variables `SITE_URL` and `SITE_BASE_PATH`, so moving the site to another address only means changing those variables.
+
 ## Configuration
 
 | Variable         | Purpose                                                   |
 | :--------------- | :-------------------------------------------------------- |
 | `SITE_URL`       | Public URL of the site. Required for the sitemap.         |
-| `SITE_BASE_PATH` | Path the site is served under, when it is not the root.   |
+| `SITE_BASE_PATH` | Path the site is served under, when it is not the root. Internal links in Markdown are written from the root (`/getting-started/`) and get this prefix when the site is built. |

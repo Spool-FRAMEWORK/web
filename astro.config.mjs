@@ -4,6 +4,7 @@ import starlight from '@astrojs/starlight';
 import react from '@astrojs/react';
 import starlightLinksValidator from 'starlight-links-validator';
 import { site } from './src/data/site.ts';
+import { rehypeBaseLinks } from './src/plugins/rehype-base-links.mjs';
 
 const sections = [
 	{ label: 'Getting started', directory: 'getting-started' },
@@ -19,6 +20,7 @@ export default defineConfig({
 	devToolbar: { enabled: false },
 	site: process.env.SITE_URL,
 	base: process.env.SITE_BASE_PATH,
+	markdown: { rehypePlugins: [rehypeBaseLinks(process.env.SITE_BASE_PATH)] },
 	integrations: [
 		starlight({
 			title: site.name,
