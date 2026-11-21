@@ -6,11 +6,15 @@ sidebar:
   order: 1
 ---
 
+import KnowledgeBase from '../../../components/diagrams/KnowledgeBase.astro';
+
 A virtual assistant that answers questions about a team's work needs a knowledge base that follows the team's issues and documents as they change. It also needs to say where each answer comes from, or nobody can check it. This page describes how a Spool pipeline can do both, with Linear as the source.
 
 Spool runs the whole preparation of the knowledge base. It reads Linear, keeps track of what changed, splits the documents into chunks, computes their embeddings and stores them in a vector database. Only the assistant that answers questions is outside Spool.
 
 ## The pipeline
+
+<KnowledgeBase />
 
 1. Two **crawlers** poll the Linear API on a schedule, one for issues and one for documents. Linear has no plugin in Spool, so the pipeline adds a poll source of its own, as [Ports and backends](/ports/#your-own-plugins) shows. Each issue and each document becomes a record.
 2. Each crawler maps its records to one class, `LinearIssue` or `LinearDocument`, so the data lake keeps them in separate partitions (`eventType=LinearIssue`, `eventType=LinearDocument`). One crawler per class matters, because a crawler with several classes uses the first one that can read the record, and a lenient class can read almost anything.
