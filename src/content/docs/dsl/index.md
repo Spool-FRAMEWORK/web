@@ -87,8 +87,8 @@ Both lists accept plain names or objects with a `value` key:
 
 ```yaml
 domainMappingList:
-  - BoeItem
-  - value: BoeSummary
+  - Order
+  - value: Refund
 ```
 
 ## ingester

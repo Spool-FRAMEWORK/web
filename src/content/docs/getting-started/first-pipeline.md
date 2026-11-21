@@ -165,4 +165,4 @@ curl http://localhost:8080/spool/health
 ## Next steps
 
 - [How Spool works](/concepts/) explains the modules and the events between them.
-- [Examples](/examples/) shows a pipeline over the Spanish official gazette.
+- [SEC EDGAR filings](/examples/sec-edgar/) shows a pipeline over real public data, with a source written for it.

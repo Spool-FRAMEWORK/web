@@ -16,7 +16,7 @@ A crawler has one of two types:
 - `POLL` asks the source for data on a schedule. With `scheduleMilliseconds` set to a value greater than zero it repeats at that interval; without it, or with `0`, it reads once.
 - `STREAM` receives records as the source pushes them.
 
-The source is a plugin chosen with `source.type`. Spool includes `HTTP` for polling a URL and `IN_MEMORY` for streams created in the same process. You can add your own, as the [BOE example](/examples/) does with `BOE_HTTP`. See [Ports and backends](/ports/).
+The source is a plugin chosen with `source.type`. Spool includes `HTTP` for polling a URL and `IN_MEMORY` for streams created in the same process. You can add your own, as the [SEC EDGAR example](/examples/sec-edgar/) does with `SEC_DAILY_INDEX`. See [Ports and backends](/ports/).
 
 ## From response to records
 
