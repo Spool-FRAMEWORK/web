@@ -1,0 +1,222 @@
+:root {
+	--landing-ink: #0d1220;
+	--landing-ink-raised: #161c2e;
+	--landing-ink-border: #232b42;
+	--landing-text: #0d1220;
+	--landing-muted: #4e5568;
+	--landing-faint: #8790a8;
+	--landing-on-ink: #e8ecf6;
+	--landing-on-ink-muted: #b8c0d4;
+	--landing-on-ink-faint: #a3acc2;
+	--landing-blue: #1f45c8;
+	--landing-blue-dark: #16349a;
+	--landing-blue-light: #7b96ff;
+	--landing-blue-pale: #9db1ff;
+	--landing-blue-tint: #e8edfb;
+	--landing-ground: #ffffff;
+	--landing-band: #f4f5f8;
+	--landing-border: #dde1ea;
+	--landing-border-strong: #c9d0de;
+	--landing-warn: #f2c14e;
+	--landing-warn-dark: #b76e00;
+	--landing-warn-tint: #fff4d6;
+	--landing-ok: #1e8c6e;
+	--landing-display: 'Familjen Grotesk', 'Instrument Sans', system-ui, sans-serif;
+	--landing-body: 'Instrument Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+	--landing-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+	--landing-header-height: 72px;
+}
+
+* {
+	box-sizing: border-box;
+}
+
+html {
+	scroll-padding-top: var(--landing-header-height);
+}
+
+body {
+	margin: 0;
+	font-family: var(--landing-body);
+	font-size: 17px;
+	line-height: 1.6;
+	color: var(--landing-text);
+	background: var(--landing-ground);
+}
+
+a {
+	color: var(--landing-blue);
+}
+
+a:hover {
+	color: var(--landing-blue-dark);
+}
+
+:focus-visible {
+	outline: 2px solid var(--landing-blue);
+	outline-offset: 3px;
+}
+
+code,
+pre {
+	font-family: var(--landing-mono);
+}
+
+.wrap {
+	position: relative;
+	max-width: 1280px;
+	margin: 0 auto;
+	padding-left: 32px;
+	padding-right: 32px;
+}
+
+.section {
+	padding-left: 80px;
+}
+
+.rail {
+	position: absolute;
+	left: 32px;
+	top: 0;
+	bottom: 0;
+	width: 1px;
+	background: rgba(31, 69, 200, 0.22);
+}
+
+.eyebrow {
+	position: relative;
+	font-family: var(--landing-mono);
+	font-size: 14px;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	color: var(--landing-blue);
+}
+
+.knot {
+	position: absolute;
+	left: -55px;
+	top: 3px;
+	width: 13px;
+	height: 13px;
+	border-radius: 50%;
+	border: 3px solid var(--landing-blue);
+	background: var(--landing-band);
+}
+
+.section-title {
+	margin: 0;
+	font-family: var(--landing-display);
+	font-size: clamp(32px, 4.2vw, 56px);
+	line-height: 1.05;
+	font-weight: 500;
+	letter-spacing: -0.025em;
+}
+
+.button {
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+	height: 52px;
+	padding: 0 26px;
+	border-radius: 999px;
+	font-weight: 600;
+	text-decoration: none;
+	white-space: nowrap;
+}
+
+.button-primary {
+	background: var(--landing-blue);
+	color: #ffffff;
+}
+
+.button-primary:hover {
+	background: var(--landing-blue-dark);
+	color: #ffffff;
+}
+
+.button-ink {
+	height: 46px;
+	padding: 0 22px;
+	background: var(--landing-ink);
+	color: #ffffff;
+}
+
+.button-ink:hover {
+	background: var(--landing-blue-dark);
+	color: #ffffff;
+}
+
+.button-light {
+	background: #ffffff;
+	color: var(--landing-ink);
+}
+
+.button-light:hover {
+	background: var(--landing-blue-tint);
+	color: var(--landing-ink);
+}
+
+.chip {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 3px 10px;
+	border-radius: 999px;
+	font-family: var(--landing-mono);
+	font-size: 13px;
+	white-space: nowrap;
+	background: #ffffff;
+	border: 1px solid var(--landing-border);
+	color: var(--landing-ink);
+}
+
+.chip-ink {
+	background: var(--landing-ink);
+	border-color: var(--landing-ink);
+	color: #ffffff;
+}
+
+.chip-blue {
+	background: var(--landing-blue);
+	border-color: var(--landing-blue);
+	color: #ffffff;
+}
+
+.chip-tint {
+	background: var(--landing-blue-tint);
+	border-color: var(--landing-blue-tint);
+	color: var(--landing-blue-dark);
+}
+
+.chip-warn {
+	background: var(--landing-warn-tint);
+	border-color: var(--landing-warn-tint);
+	color: var(--landing-warn-dark);
+}
+
+.visually-hidden {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	margin: -1px;
+	padding: 0;
+	overflow: hidden;
+	clip: rect(0 0 0 0);
+	white-space: nowrap;
+	border: 0;
+}
+
+@media (max-width: 760px) {
+	.wrap {
+		padding-left: 20px;
+		padding-right: 20px;
+	}
+	.section {
+		padding-left: 20px;
+	}
+	.rail,
+	.knot,
+	.hide-small {
+		display: none !important;
+	}
+}

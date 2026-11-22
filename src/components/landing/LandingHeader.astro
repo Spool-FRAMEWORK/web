@@ -1,0 +1,116 @@
+---
+import Logo from './Logo.astro';
+import { site, withBase } from '../../data/site';
+
+const links = [
+	{ label: 'Docs', href: withBase('getting-started/') },
+	{ label: 'Install', href: '#install' },
+	{ label: 'How it works', href: '#how' },
+	{ label: 'Use case', href: '#use-case' },
+];
+---
+
+<div class="landing-header" data-landing-header>
+	<header class="wrap">
+		<a class="brand" href={withBase('')} aria-label="Spool home">
+			<Logo size={30} tone="on-light" />
+			<span>spool</span>
+		</a>
+		<nav class="hide-small" aria-label="Main">
+			{links.map((link) => <a href={link.href}>{link.label}</a>)}
+		</nav>
+		<span class="spacer"></span>
+		<a class="github" href={site.githubUrl} aria-label="Spool on GitHub">
+			<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 19c-4.3 1.4-4.3-2.5-6-3m12 5v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.6 4.6 0 0 0-1.3-3.2 4.2 4.2 0 0 0-.1-3.2s-1.1-.3-3.5 1.3a12.3 12.3 0 0 0-6.2 0C6.5 2.8 5.4 3.1 5.4 3.1a4.2 4.2 0 0 0-.1 3.2A4.6 4.6 0 0 0 4 9.5c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21"></path></svg>
+		</a>
+		<a class="button button-primary get-started" href={withBase('getting-started/')}>Get started</a>
+	</header>
+</div>
+
+<script>
+	const header = document.querySelector<HTMLElement>('[data-landing-header]');
+	if (header) {
+		const update = () => header.classList.toggle('is-scrolled', window.scrollY > 8);
+		window.addEventListener('scroll', update, { passive: true });
+		update();
+	}
+</script>
+
+<style>
+	.landing-header {
+		position: sticky;
+		top: 0;
+		z-index: 50;
+		border-bottom: 1px solid transparent;
+		background: transparent;
+		transition: background-color 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
+	}
+
+	.landing-header.is-scrolled {
+		border-bottom-color: var(--landing-border);
+		background: rgba(255, 255, 255, 0.97);
+		box-shadow: 0 6px 20px rgba(13, 18, 32, 0.06);
+	}
+
+	header {
+		height: var(--landing-header-height);
+		display: flex;
+		align-items: center;
+		gap: 32px;
+	}
+
+	.brand {
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
+		padding: 8px 0;
+		text-decoration: none;
+		font-family: var(--landing-display);
+		font-weight: 600;
+		font-size: 22px;
+		letter-spacing: -0.02em;
+		color: var(--landing-ink);
+	}
+
+	nav {
+		display: flex;
+		gap: 26px;
+		font-size: 15px;
+		font-weight: 500;
+	}
+
+	nav a {
+		padding: 10px 0;
+		color: var(--landing-ink);
+		text-decoration: none;
+	}
+
+	nav a:hover {
+		color: var(--landing-blue);
+	}
+
+	.spacer {
+		flex: 1 1 auto;
+	}
+
+	.github {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 44px;
+		height: 44px;
+		color: var(--landing-ink);
+	}
+
+	.get-started {
+		height: 44px;
+		padding: 0 20px;
+		font-size: 15px;
+	}
+
+	@media (max-width: 760px) {
+		header {
+			gap: 12px;
+		}
+	}
+</style>

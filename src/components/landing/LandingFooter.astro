@@ -1,0 +1,76 @@
+---
+import Logo from './Logo.astro';
+import { site, withBase } from '../../data/site';
+
+const links = [
+	{ label: 'Documentation', href: withBase('getting-started/') },
+	{ label: 'Examples', href: site.examplesUrl },
+	{ label: 'Maven Central', href: site.mavenCentralUrl },
+	{ label: 'GitHub', href: site.githubUrl },
+];
+---
+
+<footer class="wrap">
+	<span class="brand">
+		<Logo size={24} tone="on-dark" />
+		<span>spool</span>
+	</span>
+	<span class="about">
+		<span>Created by {site.author} as a {site.origin}.</span>
+		<span>Released under the <a href={withBase(site.license.pagePath)}>{site.license.name}</a>.</span>
+	</span>
+	<nav aria-label="Footer">
+		{links.map((link) => <a href={link.href}>{link.label}</a>)}
+	</nav>
+</footer>
+
+<style>
+	footer {
+		padding-top: 28px;
+		padding-bottom: 40px;
+		border-top: 1px solid var(--landing-ink-border);
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 16px 40px;
+		font-size: 14px;
+		color: var(--landing-on-ink-faint);
+	}
+
+	.brand {
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
+		font-family: var(--landing-display);
+		font-weight: 600;
+		font-size: 18px;
+		color: #ffffff;
+	}
+
+	.about {
+		flex: 1 1 360px;
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+	}
+
+	.about a {
+		color: var(--landing-on-ink);
+	}
+
+	nav {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0 24px;
+	}
+
+	nav a {
+		padding: 8px 0;
+		color: var(--landing-on-ink);
+	}
+
+	nav a:hover,
+	.about a:hover {
+		color: #ffffff;
+	}
+</style>
