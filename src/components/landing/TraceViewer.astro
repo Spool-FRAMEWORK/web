@@ -1,0 +1,341 @@
+---
+type Tone = 'ok' | 'warn' | 'action' | 'end';
+
+interface TraceStep {
+	code: string;
+	module: string;
+	text: string;
+	tone: Tone;
+}
+
+interface Envelope {
+	id: string;
+	state: string;
+	tone: 'ok' | 'warn';
+	steps: TraceStep[];
+}
+
+const captured: TraceStep = { code: 'CAPTURED', module: 'crawler', text: 'Read from Linear and saved in the inbox.', tone: 'ok' };
+const persisted: TraceStep = { code: 'PERSISTED', module: 'ingester', text: 'Passed every validation rule and was written to a data lake partition.', tone: 'ok' };
+const envelopes: Envelope[] = [
+	{
+		id: '9f2c…e41a',
+		state: 'PERSISTED',
+		tone: 'ok',
+		steps: [
+			captured,
+			persisted,
+			{ code: 'data mart', module: 'mounter', text: 'Split into chunks, embedded and stored in the knowledge base.', tone: 'end' },
+		],
+	},
+	{
+		id: '1b7d…08c3',
+		state: 'PERSISTED',
+		tone: 'ok',
+		steps: [
+			captured,
+			{ code: 'published again', module: 'janitor', text: 'Stayed captured past the threshold, so the janitor published it again.', tone: 'action' },
+			persisted,
+		],
+	},
+	{
+		id: 'c4e0…5a91',
+		state: 'QUARANTINED',
+		tone: 'warn',
+		steps: [
+			captured,
+			{ code: 'QUARANTINED', module: 'ingester', text: 'Broke a validation rule. The list of violations travels with it.', tone: 'warn' },
+		],
+	},
+];
+---
+
+<div class="viewer-wrap wrap">
+	<div class="viewer" data-trace-viewer>
+		<div class="bar">
+			<span class="title">
+				<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9DB1FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="5" cy="6" r="2"></circle><circle cx="19" cy="18" r="2"></circle><path d="M7 6h7a3.5 3.5 0 0 1 0 7H10a2.5 2.5 0 0 0 0 5h7"></path></svg>
+				Trace viewer
+			</span>
+			<span class="context">source linear-issues, last three envelopes</span>
+		</div>
+		<div class="body">
+			<div class="envelopes" role="group" aria-label="Envelopes">
+				{envelopes.map((envelope, index) => (
+					<button type="button" class="envelope" data-envelope={index} aria-pressed={index === 0 ? 'true' : 'false'}>
+						<span class="envelope-id">{envelope.id}</span>
+						<span class:list={['badge', `badge-${envelope.tone}`]}>{envelope.state}</span>
+					</button>
+				))}
+			</div>
+			{envelopes.map((envelope, index) => (
+				<div class="trace" data-trace={index} hidden={index !== 0}>
+					<div class="facts">
+						<span><span class="fact-name">envelope </span>{envelope.id}</span>
+						<span><span class="fact-name">source </span>linear-issues</span>
+						<span><span class="fact-name">key </span>sha256(source, content)</span>
+					</div>
+					<ol>
+						{envelope.steps.map((step, stepIndex) => (
+							<li class={`tone-${step.tone}`}>
+								<div class="track">
+									<span class="mark"></span>
+									{stepIndex < envelope.steps.length - 1 && <span class="line"></span>}
+								</div>
+								<div class="step">
+									<span class="step-head"><span class="code">{step.code}</span><span class="module">{step.module}</span></span>
+									<span class="text">{step.text}</span>
+								</div>
+							</li>
+						))}
+					</ol>
+				</div>
+			))}
+		</div>
+	</div>
+</div>
+
+<script>
+	const viewer = document.querySelector<HTMLElement>('[data-trace-viewer]');
+	if (viewer) {
+		const buttons = [...viewer.querySelectorAll<HTMLButtonElement>('[data-envelope]')];
+		const traces = [...viewer.querySelectorAll<HTMLElement>('[data-trace]')];
+		buttons.forEach((button) =>
+			button.addEventListener('click', () => {
+				buttons.forEach((other) => other.setAttribute('aria-pressed', String(other === button)));
+				traces.forEach((trace) => (trace.hidden = trace.dataset.trace !== button.dataset.envelope));
+			}),
+		);
+	}
+</script>
+
+<style>
+	.viewer-wrap {
+		padding-top: 64px;
+	}
+
+	.viewer {
+		position: relative;
+		z-index: 2;
+		margin-bottom: -140px;
+		background: var(--landing-ink);
+		border: 1px solid var(--landing-ink-border);
+		border-radius: 24px;
+		overflow: hidden;
+		box-shadow: 0 40px 80px rgba(13, 18, 32, 0.25);
+		text-align: left;
+	}
+
+	.bar {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: 8px 24px;
+		padding: 14px 20px;
+		border-bottom: 1px solid var(--landing-ink-border);
+	}
+
+	.title {
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
+		font-weight: 600;
+		font-size: 15px;
+		color: #ffffff;
+	}
+
+	.context,
+	.facts {
+		font-family: var(--landing-mono);
+		font-size: 13px;
+		color: var(--landing-on-ink-faint);
+	}
+
+	.body {
+		display: flex;
+		flex-wrap: wrap;
+	}
+
+	.envelopes {
+		flex: 1 1 260px;
+		max-width: 100%;
+		padding: 12px;
+		border-right: 1px solid var(--landing-ink-border);
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
+	}
+
+	.envelope {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 6px;
+		width: 100%;
+		padding: 12px 14px;
+		border: 1px solid transparent;
+		border-radius: 12px;
+		background: transparent;
+		font: inherit;
+		text-align: left;
+		cursor: pointer;
+	}
+
+	.envelope:hover {
+		background: #141b2e;
+	}
+
+	.envelope[aria-pressed='true'] {
+		background: #1a2238;
+		border-color: var(--landing-blue-light);
+	}
+
+	.envelope-id {
+		font-family: var(--landing-mono);
+		font-size: 14px;
+		color: var(--landing-on-ink);
+	}
+
+	.badge {
+		padding: 2px 10px;
+		border-radius: 999px;
+		font-family: var(--landing-mono);
+		font-size: 12px;
+		font-weight: 500;
+	}
+
+	.badge-ok {
+		background: rgba(123, 150, 255, 0.16);
+		color: var(--landing-blue-pale);
+	}
+
+	.badge-warn {
+		background: rgba(242, 193, 78, 0.14);
+		color: var(--landing-warn);
+	}
+
+	.trace {
+		flex: 999 1 420px;
+		min-width: 0;
+		padding: 24px 28px 28px;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.trace[hidden] {
+		display: none;
+	}
+
+	.facts {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 6px 24px;
+		padding-bottom: 20px;
+		color: #ffffff;
+	}
+
+	.fact-name {
+		color: var(--landing-faint);
+	}
+
+	ol {
+		margin: 0;
+		padding: 0;
+		list-style: none;
+		display: flex;
+		flex-direction: column;
+	}
+
+	li {
+		display: flex;
+		gap: 16px;
+	}
+
+	.track {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		width: 14px;
+		flex: none;
+	}
+
+	.mark {
+		width: 14px;
+		height: 14px;
+		flex: none;
+		border-radius: 50%;
+		background: var(--landing-blue-light);
+	}
+
+	.tone-warn .mark {
+		background: var(--landing-warn);
+	}
+
+	.tone-action .mark {
+		border: 2px solid var(--landing-on-ink-faint);
+		background: var(--landing-ink);
+	}
+
+	.tone-end .mark {
+		border: 3px solid var(--landing-blue-light);
+		background: var(--landing-ink);
+	}
+
+	.line {
+		flex: 1;
+		width: 2px;
+		min-height: 20px;
+		background: rgba(123, 150, 255, 0.45);
+	}
+
+	.step {
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+		padding-bottom: 22px;
+		margin-top: -3px;
+		min-width: 0;
+	}
+
+	.step-head {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		gap: 4px 12px;
+	}
+
+	.code {
+		font-family: var(--landing-mono);
+		font-weight: 500;
+		font-size: 15px;
+		color: #ffffff;
+	}
+
+	.tone-warn .code {
+		color: var(--landing-warn);
+	}
+
+	.tone-action .code {
+		color: var(--landing-on-ink-faint);
+	}
+
+	.module {
+		font-family: var(--landing-mono);
+		font-size: 13px;
+		color: var(--landing-faint);
+	}
+
+	.text {
+		font-size: 15px;
+		line-height: 1.5;
+		color: var(--landing-on-ink-muted);
+	}
+
+	@media (max-width: 760px) {
+		.envelopes {
+			border-right: 0;
+			border-bottom: 1px solid var(--landing-ink-border);
+		}
+	}
+</style>
