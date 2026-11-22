@@ -1,0 +1,15 @@
+:root:root {
+	--sl-openapi-method-hue-get: 226;
+}
+
+:root[data-theme='light']
+	:is(
+		.sl-openapi-section-panel,
+		.sl-openapi-operation-description,
+		.sl-openapi-overview-navigation-link,
+		.sl-openapi-example
+	) {
+	--sl-color-gray-5: var(--spool-border);
+	--sl-color-gray-6: var(--spool-band-background);
+	--sl-color-gray-7: var(--spool-band-background);
+}

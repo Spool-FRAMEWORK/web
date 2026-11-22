@@ -58,7 +58,7 @@ export default defineConfig({
 				{ tag: 'link', attrs: { rel: 'stylesheet', href: fontsStylesheetUrl } },
 			],
 			editLink: { baseUrl: `${site.webRepositoryUrl}/edit/develop/` },
-			customCss: ['./src/styles/theme.css'],
+			customCss: ['./src/styles/theme.css', './src/styles/openapi.css'],
 			components: {
 				Header: './src/components/Header.astro',
 				Footer: './src/components/Footer.astro',
