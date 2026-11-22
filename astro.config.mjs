@@ -3,8 +3,12 @@ import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 import react from '@astrojs/react';
 import starlightLinksValidator from 'starlight-links-validator';
+import starlightOpenAPI, { openAPISidebarGroups } from 'starlight-openapi';
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
 import { fontsStylesheetUrl, site } from './src/data/site.ts';
 import { rehypeBaseLinks } from './src/plugins/rehype-base-links.mjs';
+import { openApiContracts, openApiContractsDirectory } from './src/data/openapi-contracts.mjs';
 
 const sections = [
 	{ label: 'Getting started', directory: 'getting-started' },
@@ -16,6 +20,26 @@ const sections = [
 	{ label: 'Examples', directory: 'examples' },
 	{ label: 'Use cases', directory: 'use-cases' },
 ];
+
+const downloadedOpenApiContracts = openApiContracts
+	.map((contract) => ({ ...contract, schema: join(openApiContractsDirectory, contract.fileName) }))
+	.filter((contract) => existsSync(contract.schema));
+
+const apiReference =
+	downloadedOpenApiContracts.length === 0
+		? { sidebar: [], plugins: [] }
+		: {
+				sidebar: [{ label: 'API reference', items: openAPISidebarGroups }],
+				plugins: [
+					starlightOpenAPI(
+						downloadedOpenApiContracts.map(({ basePath, label, schema }) => ({
+							base: basePath,
+							schema,
+							sidebar: { label, operations: { badges: true } },
+						})),
+					),
+				],
+			};
 
 export default defineConfig({
 	devToolbar: { enabled: false },
@@ -59,11 +83,14 @@ export default defineConfig({
 					},
 				},
 			},
-			plugins: [starlightLinksValidator()],
-			sidebar: sections.map(({ label, directory }) => ({
-				label,
-				items: [{ autogenerate: { directory } }],
-			})),
+			plugins: [starlightLinksValidator(), ...apiReference.plugins],
+			sidebar: [
+				...sections.map(({ label, directory }) => ({
+					label,
+					items: [{ autogenerate: { directory } }],
+				})),
+				...apiReference.sidebar,
+			],
 		}),
 		react(),
 	],
