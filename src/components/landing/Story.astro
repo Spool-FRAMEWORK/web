@@ -1,0 +1,595 @@
+---
+import StopDetails from './StopDetails.astro';
+import { route, stops } from './story';
+
+const illustrations = import.meta.glob<string>('./illustrations/*.svg', { query: '?raw', import: 'default', eager: true });
+const illustration = (name: string) => illustrations[`./illustrations/${name}.svg`];
+const quarantineIllustration = illustration('quarantine');
+
+const storyConfiguration = {
+	stops: stops.map(({ camera, recordDistance, traceDistance }) => ({ camera, recordDistance, traceDistance })),
+	quarantineStop: route.quarantineStop,
+	traceVisibleFrom: route.traceVisibleFrom,
+	traceVisibleUntil: route.traceVisibleUntil,
+	answerStop: stops.length - 1,
+};
+const stopNumber = (index: number) => `${String(index + 1).padStart(2, '0')} / ${String(stops.length).padStart(2, '0')}`;
+---
+
+<div class="story">
+	<section id="how" class="story-intro wrap section">
+		<span class="rail" aria-hidden="true"></span>
+		<span class="eyebrow"><span class="knot" aria-hidden="true"></span>How it works</span>
+		<h2 class="section-title">Follow a record through Spool.</h2>
+		<p class="intro-text">One issue from Linear, from the moment it is read to the moment an assistant answers with it. Each scroll moves it one stop further.</p>
+		<div class="legend">
+			<span><span class="legend-record" aria-hidden="true"></span>the record, event by event on the bus</span>
+			<span><span class="legend-trace" aria-hidden="true"></span>its OpenTelemetry trace, alongside it and on to your backend</span>
+		</div>
+	</section>
+
+	<div class="track desktop-only" data-story data-configuration={JSON.stringify(storyConfiguration)} style={`--stop-count: ${stops.length}`}>
+		<div class="stage" data-stage>
+			<div class="viewport" aria-hidden="true">
+				<div class="world" data-world style={`width: ${route.worldWidth}px; height: ${route.worldHeight}px`}>
+					<svg class="routes" width={route.worldWidth} height={route.worldHeight} viewBox={`0 0 ${route.worldWidth} ${route.worldHeight}`}>
+						<defs>
+							<pattern id="story-grid" width="80" height="80" patternUnits="userSpaceOnUse">
+								<path d="M 80 0 L 0 0 0 80" fill="none" stroke="#E9ECF3" stroke-width="1"></path>
+							</pattern>
+							<mask id="story-trace-mask" maskUnits="userSpaceOnUse" x="0" y="-100" width={route.worldWidth} height="1100">
+								<path data-trace-mask d={route.trace} fill="none" stroke="#FFFFFF" stroke-width="14" stroke-linecap="round"></path>
+							</mask>
+						</defs>
+						<rect x="-1600" y="-1600" width="8200" height="4100" fill="url(#story-grid)"></rect>
+						<path d={route.record} fill="none" stroke="#DDE1EA" stroke-width="5" stroke-linecap="round"></path>
+						<path d={route.trace} fill="none" stroke="#D3DBF3" stroke-width="3" stroke-dasharray="2 10" stroke-linecap="round"></path>
+						<path d={route.quarantine} fill="none" stroke="#F2C14E" stroke-width="4" stroke-dasharray="10 10" stroke-linecap="round"></path>
+						<path d={route.answer} fill="none" stroke="#DDE1EA" stroke-width="5" stroke-linecap="round"></path>
+						<path data-record-path d={route.record} fill="none" stroke="#1F45C8" stroke-width="5" stroke-linecap="round"></path>
+						<path data-answer-path d={route.answer} fill="none" stroke="#1F45C8" stroke-width="5" stroke-linecap="round"></path>
+						<path d={route.trace} fill="none" stroke="#7B96FF" stroke-width="3" stroke-dasharray="2 10" stroke-linecap="round" mask="url(#story-trace-mask)"></path>
+					</svg>
+
+					{stops.map((stop, index) => (
+						<>
+							<div class="station" data-station={index} style={`left: ${stop.illustrationAt[0]}px; top: ${stop.illustrationAt[1]}px`} set:html={illustration(stop.illustration)}></div>
+							<div class="node" data-station={index} style={`left: ${stop.node[0]}px; top: ${stop.node[1]}px`}></div>
+							<div class:list={['station-label', stop.labelBelow ? 'below' : 'above']} data-station={index} style={`left: ${stop.node[0]}px; top: ${stop.node[1] + (stop.labelBelow ? 34 : -34)}px`}>{stop.label}</div>
+						</>
+					))}
+					<div class="station quarantine" data-quarantine style={`left: ${route.quarantineIllustrationAt[0]}px; top: ${route.quarantineIllustrationAt[1]}px`}>
+						<Fragment set:html={quarantineIllustration} />
+						<span>quarantine</span>
+					</div>
+					<div class="node warning" data-quarantine style={`left: ${route.quarantineNode[0]}px; top: ${route.quarantineNode[1]}px`}></div>
+
+					<div class="record-dot" data-record-dot style={`offset-path: path('${route.record}')`}></div>
+					<div class="trace-dot" data-trace-dot style={`offset-path: path('${route.trace}')`}></div>
+					<div class="record-dot" data-answer-dot style={`offset-path: path('${route.answer}')`}></div>
+				</div>
+			</div>
+
+			<div class="captions" aria-live="polite">
+				{stops.map((stop, index) => (
+					<div class="caption" data-caption={index}>
+						<span class="caption-number">{stopNumber(index)}</span>
+						<h3>{stop.title}</h3>
+						<StopDetails stop={stop} />
+					</div>
+				))}
+			</div>
+
+			<nav class="stop-buttons" aria-label="Stops">
+				{stops.map((stop, index) => (
+					<button type="button" data-go-to={index} aria-label={`Stop ${index + 1} of ${stops.length}, ${stop.title}`}></button>
+				))}
+			</nav>
+			<span class="hint" data-hint>Scroll for the next stop</span>
+		</div>
+	</div>
+
+	<ol class="mobile-stops mobile-only">
+		{stops.map((stop) => (
+			<li>
+				<span class="mobile-node" aria-hidden="true"></span>
+				<div class="mobile-illustration" set:html={illustration(stop.illustration)}></div>
+				<span class="caption-number">{stop.label}</span>
+				<h3>{stop.title}</h3>
+				<StopDetails stop={stop} />
+			</li>
+		))}
+	</ol>
+</div>
+
+<script>
+	interface StopConfiguration {
+		camera: [number, number, number];
+		recordDistance: number;
+		traceDistance: number;
+	}
+
+	interface StoryConfiguration {
+		stops: StopConfiguration[];
+		quarantineStop: number;
+		traceVisibleFrom: number;
+		traceVisibleUntil: number;
+		answerStop: number;
+	}
+
+	const captionsWidth = 460;
+	const rightMargin = 60;
+	const referenceStageHeight = 760;
+	const headerHeight = 72;
+
+	function setup(track: HTMLElement) {
+		const configuration = JSON.parse(track.dataset.configuration ?? '{}') as StoryConfiguration;
+		const stage = track.querySelector<HTMLElement>('[data-stage]')!;
+		const world = track.querySelector<HTMLElement>('[data-world]')!;
+		const recordPath = track.querySelector<SVGPathElement>('[data-record-path]')!;
+		const answerPath = track.querySelector<SVGPathElement>('[data-answer-path]')!;
+		const traceMask = track.querySelector<SVGPathElement>('[data-trace-mask]')!;
+		const recordDot = track.querySelector<HTMLElement>('[data-record-dot]')!;
+		const traceDot = track.querySelector<HTMLElement>('[data-trace-dot]')!;
+		const answerDot = track.querySelector<HTMLElement>('[data-answer-dot]')!;
+		const hint = track.querySelector<HTMLElement>('[data-hint]')!;
+		const buttons = [...track.querySelectorAll<HTMLButtonElement>('[data-go-to]')];
+		const lastStop = configuration.stops.length - 1;
+		const recordLength = recordPath.getTotalLength();
+		const answerLength = answerPath.getTotalLength();
+		const traceLength = traceMask.getTotalLength();
+		let current = -1;
+
+		recordPath.style.strokeDasharray = `${recordLength} ${recordLength + 50}`;
+		answerPath.style.strokeDasharray = `${answerLength} ${answerLength + 50}`;
+		traceMask.style.strokeDasharray = `${traceLength} ${traceLength + 50}`;
+
+		function placeCamera(stop: StopConfiguration) {
+			const [x, y, scale] = stop.camera;
+			const stageWidth = stage.clientWidth;
+			const stageHeight = stage.clientHeight;
+			const zoom = scale * Math.min(1, stageHeight / referenceStageHeight);
+			const centerX = captionsWidth + (stageWidth - captionsWidth - rightMargin) / 2;
+			const centerY = stageHeight / 2;
+			world.style.transform = `translate(${(centerX - x * zoom).toFixed(1)}px, ${(centerY - y * zoom).toFixed(1)}px) scale(${zoom.toFixed(4)})`;
+		}
+
+		function show(index: number) {
+			const stop = configuration.stops[index];
+			placeCamera(stop);
+			recordPath.style.strokeDashoffset = String(recordLength - stop.recordDistance);
+			traceMask.style.strokeDashoffset = String(traceLength - stop.traceDistance);
+			recordDot.style.offsetDistance = `${Math.min(100, (stop.recordDistance / recordLength) * 100).toFixed(3)}%`;
+			traceDot.style.offsetDistance = `${Math.min(100, (stop.traceDistance / traceLength) * 100).toFixed(3)}%`;
+			traceDot.classList.toggle('is-visible', index >= configuration.traceVisibleFrom && index <= configuration.traceVisibleUntil);
+			const answering = index === configuration.answerStop;
+			answerPath.style.strokeDashoffset = String(answering ? 0 : answerLength);
+			answerDot.style.offsetDistance = answering ? '100%' : '0%';
+			answerDot.classList.toggle('is-visible', answering);
+			recordDot.classList.toggle('is-visible', !answering);
+			track.querySelectorAll<HTMLElement>('[data-station]').forEach((element) => element.classList.toggle('is-on', Number(element.dataset.station) <= index));
+			track.querySelectorAll<HTMLElement>('[data-quarantine]').forEach((element) => element.classList.toggle('is-on', index >= configuration.quarantineStop));
+			track.querySelectorAll<HTMLElement>('[data-caption]').forEach((caption) => caption.classList.toggle('is-current', Number(caption.dataset.caption) === index));
+			buttons.forEach((button) => {
+				if (Number(button.dataset.goTo) === index) button.setAttribute('aria-current', 'step');
+				else button.removeAttribute('aria-current');
+			});
+			hint.hidden = index === lastStop;
+		}
+
+		function travel() {
+			return track.offsetHeight - stage.offsetHeight;
+		}
+
+		function stopFromScroll() {
+			const progress = (headerHeight - track.getBoundingClientRect().top) / travel();
+			return Math.max(0, Math.min(lastStop, Math.floor(progress * configuration.stops.length)));
+		}
+
+		function update() {
+			const index = stopFromScroll();
+			if (index !== current) {
+				current = index;
+				show(index);
+			}
+		}
+
+		buttons.forEach((button) =>
+			button.addEventListener('click', () => {
+				const index = Number(button.dataset.goTo);
+				const offset = ((index + 0.5) / configuration.stops.length) * travel();
+				const top = window.scrollY + track.getBoundingClientRect().top - headerHeight + offset;
+				const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+				window.scrollTo({ top, behavior: reduceMotion ? 'auto' : 'smooth' });
+			}),
+		);
+
+		window.addEventListener('scroll', update, { passive: true });
+		window.addEventListener('resize', () => current >= 0 && placeCamera(configuration.stops[current]));
+		update();
+		requestAnimationFrame(() => track.classList.add('is-ready'));
+	}
+
+	document.querySelectorAll<HTMLElement>('[data-story]').forEach(setup);
+</script>
+
+<style>
+	.story {
+		background: var(--landing-band);
+	}
+
+	.story-intro {
+		padding-top: 240px;
+		padding-bottom: 48px;
+		display: flex;
+		flex-direction: column;
+		gap: 14px;
+	}
+
+	.intro-text {
+		margin: 0;
+		max-width: 680px;
+		font-size: 19px;
+		color: var(--landing-muted);
+	}
+
+	.legend {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 10px 28px;
+		padding-top: 6px;
+		font-size: 15px;
+		color: var(--landing-muted);
+	}
+
+	.legend > span {
+		display: inline-flex;
+		align-items: center;
+		gap: 10px;
+	}
+
+	.legend-record {
+		width: 36px;
+		height: 4px;
+		border-radius: 2px;
+		background: var(--landing-blue);
+	}
+
+	.legend-trace {
+		width: 36px;
+		height: 0;
+		border-top: 3px dotted var(--landing-blue-light);
+	}
+
+	.track {
+		position: relative;
+		height: calc(var(--stage-height) + (var(--stop-count) - 1) * 70vh);
+		--stage-height: clamp(560px, calc(100vh - var(--landing-header-height)), 860px);
+	}
+
+	.stage {
+		position: sticky;
+		top: var(--landing-header-height);
+		height: var(--stage-height);
+		overflow: hidden;
+		background: #fafbfd;
+		border-top: 1px solid #e3e7ef;
+		border-bottom: 1px solid #e3e7ef;
+	}
+
+	.viewport {
+		position: absolute;
+		inset: 0;
+		overflow: hidden;
+	}
+
+	.world {
+		position: absolute;
+		left: 0;
+		top: 0;
+		transform-origin: 0 0;
+	}
+
+	.routes {
+		position: absolute;
+		left: 0;
+		top: 0;
+		overflow: visible;
+	}
+
+	.station {
+		position: absolute;
+		width: 240px;
+		filter: grayscale(1);
+		opacity: 0.4;
+		transition: filter 700ms ease, opacity 700ms ease;
+	}
+
+	.station :global(svg) {
+		display: block;
+		width: 100%;
+		height: auto;
+		overflow: visible;
+	}
+
+	.station.is-on {
+		filter: none;
+		opacity: 1;
+	}
+
+	.station.quarantine {
+		width: 120px;
+	}
+
+	.station.quarantine span {
+		padding-left: 14px;
+		font-family: var(--landing-mono);
+		font-size: 13px;
+		color: var(--landing-warn-dark);
+	}
+
+	.node {
+		position: absolute;
+		width: 26px;
+		height: 26px;
+		margin: -13px 0 0 -13px;
+		border-radius: 50%;
+		background: #ffffff;
+		border: 4px solid #c9d0de;
+		transition: border-color 500ms ease, box-shadow 500ms ease;
+	}
+
+	.node.is-on {
+		border-color: var(--landing-blue);
+		box-shadow: 0 0 0 6px rgba(31, 69, 200, 0.15);
+	}
+
+	.node.warning.is-on {
+		border-color: #e0a92e;
+		box-shadow: 0 0 0 6px rgba(242, 193, 78, 0.25);
+	}
+
+	.station-label {
+		position: absolute;
+		padding: 6px 12px;
+		border-radius: 999px;
+		background: #ffffff;
+		border: 1px solid var(--landing-border);
+		font-family: var(--landing-mono);
+		font-size: 14px;
+		white-space: pre;
+		opacity: 0.45;
+		transition: opacity 700ms ease;
+	}
+
+	.station-label.above {
+		transform: translate(-50%, -100%);
+	}
+
+	.station-label.below {
+		transform: translate(-50%, 0);
+	}
+
+	.station-label.is-on {
+		opacity: 1;
+	}
+
+	.record-dot,
+	.trace-dot {
+		position: absolute;
+		left: 0;
+		top: 0;
+		z-index: 3;
+		border-radius: 50%;
+		offset-rotate: 0deg;
+		opacity: 0;
+		transition: opacity 400ms ease;
+	}
+
+	.record-dot {
+		width: 20px;
+		height: 20px;
+		background: var(--landing-blue);
+		box-shadow: 0 0 0 7px rgba(31, 69, 200, 0.2), 0 0 26px rgba(31, 69, 200, 0.55);
+	}
+
+	.trace-dot {
+		width: 12px;
+		height: 12px;
+		background: var(--landing-blue-light);
+		box-shadow: 0 0 0 5px rgba(123, 150, 255, 0.22);
+	}
+
+	.record-dot.is-visible,
+	.trace-dot.is-visible {
+		opacity: 1;
+	}
+
+	.is-ready .world {
+		transition: transform 1000ms cubic-bezier(0.65, 0, 0.35, 1);
+	}
+
+	.is-ready [data-record-path],
+	.is-ready [data-answer-path],
+	.is-ready [data-trace-mask] {
+		transition: stroke-dashoffset 1000ms cubic-bezier(0.65, 0, 0.35, 1);
+	}
+
+	.is-ready .record-dot,
+	.is-ready .trace-dot {
+		transition: offset-distance 1000ms cubic-bezier(0.65, 0, 0.35, 1), opacity 400ms ease;
+	}
+
+	.captions {
+		position: absolute;
+		left: 32px;
+		bottom: 32px;
+		width: 400px;
+		display: grid;
+		border-radius: 20px;
+		background: rgba(255, 255, 255, 0.94);
+		border: 1px solid var(--landing-border);
+		box-shadow: 0 20px 50px rgba(13, 18, 32, 0.1);
+	}
+
+	.caption {
+		display: none;
+		flex-direction: column;
+		gap: 10px;
+		padding: 24px;
+	}
+
+	.caption.is-current {
+		display: flex;
+		animation: caption-in 480ms ease both;
+	}
+
+	.caption-number {
+		font-family: var(--landing-mono);
+		font-size: 13px;
+		color: var(--landing-blue);
+		white-space: pre;
+	}
+
+	h3 {
+		margin: 0;
+		font-family: var(--landing-display);
+		font-size: 28px;
+		line-height: 1.12;
+		font-weight: 500;
+		letter-spacing: -0.02em;
+	}
+
+	.stop-buttons {
+		position: absolute;
+		right: 24px;
+		top: 50%;
+		transform: translateY(-50%);
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 8px;
+	}
+
+	.stop-buttons button {
+		width: 8px;
+		height: 8px;
+		padding: 0;
+		border: 0;
+		border-radius: 999px;
+		background: rgba(13, 18, 32, 0.22);
+		cursor: pointer;
+		transition: all 300ms ease;
+	}
+
+	.stop-buttons button::before {
+		content: '';
+		display: block;
+		margin: -12px;
+		width: 32px;
+		height: 32px;
+	}
+
+	.stop-buttons button[aria-current='step'] {
+		width: 10px;
+		height: 28px;
+		background: var(--landing-blue);
+	}
+
+	.hint {
+		position: absolute;
+		right: 64px;
+		bottom: 28px;
+		font-size: 13px;
+		color: var(--landing-muted);
+	}
+
+	.mobile-only {
+		display: none;
+	}
+
+	.mobile-stops {
+		position: relative;
+		margin: 8px 20px 0 32px;
+		padding: 0 0 64px 44px;
+		border-left: 3px solid var(--landing-blue);
+		list-style: none;
+		display: flex;
+		flex-direction: column;
+		gap: 48px;
+	}
+
+	.mobile-stops li {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+	}
+
+	.mobile-stops h3 {
+		font-size: 24px;
+		line-height: 1.15;
+	}
+
+	.mobile-node {
+		position: absolute;
+		left: -58px;
+		top: 40px;
+		width: 22px;
+		height: 22px;
+		border-radius: 50%;
+		background: #ffffff;
+		border: 4px solid var(--landing-blue);
+	}
+
+	.mobile-illustration {
+		width: 150px;
+	}
+
+	.mobile-illustration :global(svg) {
+		display: block;
+		width: 100%;
+		height: auto;
+		overflow: visible;
+	}
+
+	@keyframes caption-in {
+		from {
+			opacity: 0;
+			transform: translateY(8px);
+		}
+		to {
+			opacity: 1;
+			transform: none;
+		}
+	}
+
+	@media (max-width: 760px) {
+		.desktop-only {
+			display: none;
+		}
+		.mobile-only {
+			display: flex;
+		}
+		.story-intro {
+			padding-top: 180px;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.station,
+		.station-label,
+		.node,
+		.is-ready .world,
+		.is-ready [data-record-path],
+		.is-ready [data-answer-path],
+		.is-ready [data-trace-mask],
+		.is-ready .record-dot,
+		.is-ready .trace-dot {
+			transition: none;
+		}
+		.caption.is-current {
+			animation: none;
+		}
+	}
+</style>
