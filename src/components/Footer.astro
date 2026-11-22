@@ -37,7 +37,7 @@ const year = new Date().getFullYear();
 	</div>
 	<div class="legal">
 		<span>© {year} {site.author}</span>
-		<span>Released under the <a href={site.license.url}>{site.license.name}</a></span>
+		<span>Released under the <a href={withBase(site.license.pagePath)}>{site.license.name}</a></span>
 	</div>
 </div>
 
