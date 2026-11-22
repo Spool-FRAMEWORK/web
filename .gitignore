@@ -5,6 +5,9 @@ dist/
 public/install.sh
 public/install.ps1
 
+# OpenAPI contracts, downloaded from the module repositories before the build
+src/openapi/
+
 # generated types
 .astro/
 

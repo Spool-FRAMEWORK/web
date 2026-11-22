@@ -34,6 +34,10 @@ jobs:
               echo "::warning title=CLI install script missing::$script is not in the latest CLI release, so the site is deployed without it."
             fi
           done
+      - name: Download the OpenAPI contracts
+        env:
+          OPENAPI_REF: ${{ vars.OPENAPI_REF }}
+        run: npm run fetch:openapi
       - run: npm run build
         env:
           SITE_URL: ${{ vars.SITE_URL }}
