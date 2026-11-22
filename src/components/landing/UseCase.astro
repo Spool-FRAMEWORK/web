@@ -1,0 +1,120 @@
+---
+import { site, withBase } from '../../data/site';
+---
+
+<div class="use-case-band">
+	<section id="use-case" class="use-case wrap section">
+		<span class="rail" aria-hidden="true"></span>
+		<div class="heading">
+			<span class="eyebrow"><span class="knot" aria-hidden="true"></span>Use case</span>
+			<h2>Keep the knowledge base of a virtual assistant up to date.</h2>
+		</div>
+		<div class="body">
+			<p>The use case describes the whole pipeline, from two Linear crawlers to the Qdrant writer of the mounter, and shows how every answer can name the issues it comes from.</p>
+			<div class="actions">
+				<a class="button button-light" href={withBase('use-cases/assistant-knowledge-base/')}>
+					Read the use case
+					<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
+				</a>
+				<a class="code-link" href={site.examplesUrl}>
+					<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 8l-4 4 4 4"></path><path d="M16 8l4 4-4 4"></path></svg>
+					Browse the example pipelines
+				</a>
+			</div>
+		</div>
+	</section>
+</div>
+
+<style>
+	.use-case-band {
+		background: var(--landing-blue);
+		color: #ffffff;
+	}
+
+	.use-case {
+		padding-top: 80px;
+		padding-bottom: 80px;
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 28px 64px;
+	}
+
+	.rail {
+		background: rgba(255, 255, 255, 0.35);
+	}
+
+	.eyebrow {
+		color: #dce4ff;
+	}
+
+	.knot {
+		border-color: #ffffff;
+		background: var(--landing-blue);
+	}
+
+	.heading {
+		flex: 1 1 460px;
+		display: flex;
+		flex-direction: column;
+		gap: 12px;
+	}
+
+	h2 {
+		margin: 0;
+		font-family: var(--landing-display);
+		font-size: clamp(28px, 3vw, 40px);
+		line-height: 1.12;
+		font-weight: 500;
+		letter-spacing: -0.02em;
+	}
+
+	.body {
+		flex: 1 1 340px;
+		display: flex;
+		flex-direction: column;
+		gap: 20px;
+	}
+
+	.body p {
+		margin: 0;
+		color: #dce4ff;
+	}
+
+	.actions {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 12px 24px;
+	}
+
+	.button-light {
+		height: 48px;
+		padding: 0 24px;
+		color: var(--landing-blue);
+	}
+
+	.code-link {
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
+		padding: 8px 0;
+		font-weight: 600;
+		color: #ffffff;
+	}
+
+	.code-link:hover {
+		color: #dce4ff;
+	}
+
+	.use-case :focus-visible {
+		outline-color: #ffffff;
+	}
+
+	@media (max-width: 760px) {
+		.use-case {
+			padding-top: 64px;
+			padding-bottom: 64px;
+		}
+	}
+</style>
