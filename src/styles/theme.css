@@ -7,9 +7,6 @@
 	--spool-band-background: #f4f5f8;
 	--spool-border: #dde1ea;
 	--spool-code-chrome: #f4f5f8;
-	--spool-button: #1f45c8;
-	--spool-button-hover: #16349a;
-	--spool-button-outline-text: #1f45c8;
 	--spool-bronze: #a0602a;
 	--spool-bronze-fill: #f4e4d4;
 	--spool-gold: #a87b06;
@@ -34,9 +31,6 @@
 	--spool-band-background: #121829;
 	--spool-border: #2a3350;
 	--spool-code-chrome: #121829;
-	--spool-button: #2f55d4;
-	--spool-button-hover: #3d63e0;
-	--spool-button-outline-text: #9db1ff;
 	--spool-bronze: #d9925a;
 	--spool-bronze-fill: #3b2a1c;
 	--spool-gold: #e3b742;
@@ -73,26 +67,6 @@ header.header {
 	font-weight: 600;
 	border-inline-start: 3px solid var(--sl-color-accent);
 	border-radius: 0;
-}
-
-.sl-link-button.primary {
-	background-color: var(--spool-button);
-	border-color: var(--spool-button);
-	color: #ffffff;
-}
-.sl-link-button.primary:hover {
-	background-color: var(--spool-button-hover);
-	border-color: var(--spool-button-hover);
-	color: #ffffff;
-}
-.sl-link-button.secondary {
-	background-color: transparent;
-	border-color: var(--spool-button-outline-text);
-	color: var(--spool-button-outline-text);
-}
-.sl-link-button.secondary:hover {
-	background-color: var(--spool-band-background);
-	color: var(--spool-button-outline-text);
 }
 
 .spool-diagram {
