@@ -3,6 +3,8 @@ on:
   push:
     branches: [ develop ]
   workflow_dispatch:
+  repository_dispatch:
+    types: [ cli-released ]
 permissions:
   contents: read
   pages: write
@@ -20,6 +22,18 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
+      - name: Download the CLI install scripts
+        env:
+          CLI_DOWNLOAD_URL: ${{ vars.CLI_DOWNLOAD_URL || 'https://github.com/Spool-FRAMEWORK/cli/releases/latest/download' }}
+        run: |
+          for script in install.sh install.ps1; do
+            if curl --fail --silent --show-error --location --retry 3 --output "public/$script" "$CLI_DOWNLOAD_URL/$script"; then
+              echo "Downloaded $script from the latest CLI release."
+            else
+              rm -f "public/$script"
+              echo "::warning title=CLI install script missing::$script is not in the latest CLI release, so the site is deployed without it."
+            fi
+          done
       - run: npm run build
         env:
           SITE_URL: ${{ vars.SITE_URL }}

@@ -1,5 +1,10 @@
 # build output
 dist/
+
+# CLI install scripts, downloaded from the latest CLI release when the site is deployed
+public/install.sh
+public/install.ps1
+
 # generated types
 .astro/
 
