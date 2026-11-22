@@ -1,0 +1,159 @@
+---
+import { withBase } from '../../data/site';
+
+const points = [
+	{ icon: ['M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z', 'M14 3v6h6'], text: 'Describe the modules of a pipeline in a YAML file.' },
+	{ icon: ['M8 8l-4 4 4 4', 'M16 8l4 4-4 4'], text: 'Or build the same pipeline in Java with the builder of each module.' },
+];
+---
+
+<section id="pipeline" class="descriptor wrap section">
+	<span class="rail" aria-hidden="true"></span>
+	<div class="heading">
+		<span class="eyebrow"><span class="knot" aria-hidden="true"></span>The descriptor</span>
+		<h2 class="section-title">A pipeline is a file you can read.</h2>
+	</div>
+	<div class="panel">
+		<div class="points">
+			{points.map((point) => (
+				<div class="point">
+					<span class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{point.icon.map((path) => <path d={path}></path>)}</svg></span>
+					<p>{point.text}</p>
+				</div>
+			))}
+			<div class="point">
+				<span class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 4l12 8-12 8z"></path></svg></span>
+				<p><code>SpoolRuntime</code> runs it on one machine or across several.</p>
+			</div>
+			<a class="button button-ink" href={withBase('dsl/')}>Descriptor reference</a>
+		</div>
+		<div class="code">
+			<div class="file-name">pipeline.yaml, from the assistant use case</div>
+			<pre><span class="dash">- </span><span class="key-module">crawler</span>:
+    type: POLL
+    id: linear-issues
+    source:
+      type: LINEAR
+      configuration:
+        sourceId: linear-issues
+        url: <span class="value">"https://api.linear.app/graphql"</span>
+        entity: issues
+        scheduleMilliseconds: <span class="value">900000</span>  <span class="comment"># every 15 minutes</span>
+      mediaType: JSON_ARRAY
+      rootPath: records
+    eventMapping:
+      namingConvention: CAMEL_CASE
+      domainMappingList:
+        - LinearIssue</pre>
+		</div>
+	</div>
+</section>
+
+<style>
+	.descriptor {
+		padding-top: 104px;
+		padding-bottom: 104px;
+		display: flex;
+		flex-direction: column;
+		gap: 32px;
+	}
+
+	.knot {
+		background: #ffffff;
+	}
+
+	.heading {
+		display: flex;
+		flex-direction: column;
+		gap: 14px;
+	}
+
+	.panel {
+		display: flex;
+		flex-wrap: wrap;
+		background: #ffffff;
+		border: 1px solid var(--landing-border);
+		border-radius: 24px;
+		overflow: hidden;
+	}
+
+	.points {
+		flex: 1 1 320px;
+		padding: 32px;
+		display: flex;
+		flex-direction: column;
+		gap: 18px;
+	}
+
+	.point {
+		display: flex;
+		gap: 14px;
+		align-items: flex-start;
+	}
+
+	.point p {
+		margin: 0;
+	}
+
+	.point code {
+		font-size: 15px;
+	}
+
+	.icon {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		flex: none;
+		width: 40px;
+		height: 40px;
+		border-radius: 12px;
+		background: var(--landing-blue-tint);
+		color: var(--landing-blue);
+	}
+
+	.button-ink {
+		align-self: flex-start;
+		margin-top: 4px;
+	}
+
+	.code {
+		flex: 1.4 1 420px;
+		min-width: 0;
+		padding: 28px;
+		overflow-x: auto;
+		background: var(--landing-ink);
+	}
+
+	.file-name {
+		padding-bottom: 14px;
+		font-family: var(--landing-mono);
+		font-size: 13px;
+		color: var(--landing-on-ink-faint);
+	}
+
+	pre {
+		margin: 0;
+		font-size: 15px;
+		line-height: 1.85;
+		color: var(--landing-on-ink);
+	}
+
+	.key-module {
+		color: var(--landing-blue-pale);
+	}
+
+	.value {
+		color: #8fe0cf;
+	}
+
+	.comment {
+		color: var(--landing-faint);
+	}
+
+	@media (max-width: 760px) {
+		.descriptor {
+			padding-top: 64px;
+			padding-bottom: 64px;
+		}
+	}
+</style>

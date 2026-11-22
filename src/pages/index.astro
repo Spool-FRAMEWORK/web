@@ -5,6 +5,7 @@ import LandingFooter from '../components/landing/LandingFooter.astro';
 import Hero from '../components/landing/Hero.astro';
 import TraceViewer from '../components/landing/TraceViewer.astro';
 import Story from '../components/landing/Story.astro';
+import Descriptor from '../components/landing/Descriptor.astro';
 import { site } from '../data/site';
 ---
 
@@ -14,6 +15,9 @@ import { site } from '../data/site';
 		<Hero />
 		<TraceViewer />
 		<Story />
+		<div class="band">
+			<Descriptor />
+		</div>
 	</main>
 	<div class="ink-band">
 		<LandingFooter />
@@ -21,6 +25,10 @@ import { site } from '../data/site';
 </LandingLayout>
 
 <style>
+	.band {
+		background: var(--landing-band);
+	}
+
 	.ink-band {
 		background: var(--landing-ink);
 		color: var(--landing-on-ink);
