@@ -1,0 +1,170 @@
+---
+import type { Stop } from './story';
+
+interface Props {
+	stop: Stop;
+}
+
+const { stop } = Astro.props;
+const noteIcons = {
+	refresh: ['M21 12a9 9 0 1 1-2.6-6.4', 'M21 3v6h-6'],
+	lock: ['M8 10V7a4 4 0 0 1 8 0v3'],
+	pulse: ['M3 12h4l2-6 4 12 2-6h6'],
+};
+---
+
+<p class="text">{stop.text}</p>
+
+{stop.chips.length > 0 && (
+	<div class="chips">
+		{stop.chips.map((chip, index) => (
+			<>
+				{stop.chipsAreSteps && index > 0 && (
+					<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#4E5568" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
+				)}
+				{chip.style === 'text' ? <span class="chip-text">{chip.text}</span> : <span class:list={['chip', chip.style !== 'plain' && `chip-${chip.style}`]}>{chip.text}</span>}
+			</>
+		))}
+	</div>
+)}
+
+{stop.rules && (
+	<ul class="rules" aria-label="Validation rules">
+		{stop.rules.map((rule) => (
+			<li class:list={['rule', !rule.passed && 'rule-broken']}>
+				<span>{rule.name}</span>
+				<span class="visually-hidden">{rule.passed ? 'passed' : 'broken'}</span>
+				<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+					<path d={rule.passed ? 'M5 12l5 5L20 7' : 'M6 6l12 12M18 6L6 18'}></path>
+				</svg>
+			</li>
+		))}
+	</ul>
+)}
+
+{stop.trace && (
+	<div class="trace" role="img" aria-label="The spans of one trace, from the crawler to the mounter">
+		{stop.trace.map((row) => (
+			<div class="trace-row">
+				<span>{row.module} <span class="operation">{row.operation}</span></span>
+				<span class="trace-bar"><span style={`left: ${row.start}%; width: ${row.width}%`}></span></span>
+			</div>
+		))}
+	</div>
+)}
+
+{stop.note && (
+	<div class:list={['note', stop.note.warning && 'note-warning']}>
+		<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+			{stop.note.icon === 'lock' && <rect x="4" y="10" width="16" height="11" rx="2"></rect>}
+			{noteIcons[stop.note.icon].map((path) => <path d={path}></path>)}
+		</svg>
+		<span>{stop.note.text}</span>
+	</div>
+)}
+
+<style>
+	.text {
+		margin: 0;
+		font-size: 15px;
+		line-height: 1.55;
+		color: var(--landing-muted);
+	}
+
+	.chips {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 8px;
+	}
+
+	.chip-text {
+		font-family: var(--landing-mono);
+		font-size: 13px;
+	}
+
+	.rules {
+		margin: 0;
+		padding: 0;
+		list-style: none;
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+	}
+
+	.rule {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		gap: 12px;
+		padding: 6px 10px;
+		border-radius: 8px;
+		background: var(--landing-band);
+		font-family: var(--landing-mono);
+		font-size: 13px;
+		color: var(--landing-ok);
+	}
+
+	.rule > span:first-child {
+		color: var(--landing-ink);
+	}
+
+	.rule-broken {
+		background: var(--landing-warn-tint);
+		color: var(--landing-warn-dark);
+	}
+
+	.trace {
+		padding: 8px 10px;
+		border-radius: 12px;
+		background: var(--landing-band);
+	}
+
+	.trace-row {
+		display: grid;
+		grid-template-columns: 150px 1fr;
+		gap: 10px;
+		align-items: center;
+		padding: 5px 0;
+		font-family: var(--landing-mono);
+		font-size: 12px;
+	}
+
+	.operation {
+		color: var(--landing-faint);
+	}
+
+	.trace-bar {
+		position: relative;
+		height: 8px;
+		border-radius: 4px;
+		background: #eef0f5;
+	}
+
+	.trace-bar span {
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		border-radius: 4px;
+		background: var(--landing-blue);
+	}
+
+	.note {
+		display: flex;
+		gap: 8px;
+		align-items: flex-start;
+		font-size: 14px;
+		line-height: 1.5;
+		color: var(--landing-muted);
+	}
+
+	.note svg {
+		flex: none;
+		margin-top: 2px;
+		color: var(--landing-blue);
+	}
+
+	.note-warning svg {
+		color: var(--landing-warn-dark);
+	}
+</style>
