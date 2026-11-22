@@ -1,4 +1,7 @@
 :root {
+	--sl-font: 'Instrument Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+	--sl-font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+	--spool-font-display: 'Familjen Grotesk', var(--__sl-font);
 	--spool-header-background: #1b2430;
 	--spool-band-background: #f2f4f5;
 	--spool-border: #d5dbdb;
@@ -35,6 +38,12 @@
 	--spool-gold: #e3b742;
 	--spool-gold-fill: #3a3117;
 	--spool-surface: #1f2630;
+}
+
+:is(h1, h2, h3, h4, h5, h6),
+.site-title {
+	font-family: var(--spool-font-display);
+	letter-spacing: -0.01em;
 }
 
 header.header {

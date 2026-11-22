@@ -3,7 +3,7 @@ import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 import react from '@astrojs/react';
 import starlightLinksValidator from 'starlight-links-validator';
-import { site } from './src/data/site.ts';
+import { fontsStylesheetUrl, site } from './src/data/site.ts';
 import { rehypeBaseLinks } from './src/plugins/rehype-base-links.mjs';
 
 const sections = [
@@ -27,6 +27,11 @@ export default defineConfig({
 			title: site.name,
 			description: site.description,
 			social: [{ icon: 'github', label: 'GitHub', href: site.githubUrl }],
+			head: [
+				{ tag: 'link', attrs: { rel: 'preconnect', href: 'https://fonts.googleapis.com' } },
+				{ tag: 'link', attrs: { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' } },
+				{ tag: 'link', attrs: { rel: 'stylesheet', href: fontsStylesheetUrl } },
+			],
 			editLink: { baseUrl: `${site.webRepositoryUrl}/edit/develop/` },
 			customCss: ['./src/styles/theme.css'],
 			components: {

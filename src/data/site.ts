@@ -32,6 +32,9 @@ export const site = {
 	},
 };
 
+export const fontsStylesheetUrl =
+	'https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&display=swap';
+
 export const mavenDependency = `<dependency>
   <groupId>${site.latestRelease.groupId}</groupId>
   <artifactId>${site.latestRelease.artifactId}</artifactId>
