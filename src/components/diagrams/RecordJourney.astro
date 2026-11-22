@@ -1,0 +1,957 @@
+---
+import { withBase } from '../../data/site';
+
+interface Props {
+	mode?: 'autoplay' | 'stepper';
+}
+
+const { mode = 'autoplay' } = Astro.props;
+
+type Kind = 'source' | 'module' | 'store' | 'mart' | 'quarantine';
+type Point = [number, number];
+interface Station {
+	id: string;
+	kind: Kind;
+	name: string;
+	role: string;
+	horizontal: Point;
+	vertical: Point;
+	lower?: boolean;
+}
+
+const stations: Station[] = [
+	{ id: 'source', kind: 'source', name: 'SEC EDGAR', role: 'external source', horizontal: [64, 184], vertical: [56, 48] },
+	{ id: 'crawler', kind: 'module', name: 'crawler', role: 'reads and wraps', horizontal: [256, 184], vertical: [56, 158] },
+	{ id: 'inbox', kind: 'store', name: 'inbox', role: 'original envelopes', horizontal: [448, 184], vertical: [56, 268] },
+	{ id: 'ingester', kind: 'module', name: 'ingester', role: 'validates', horizontal: [640, 184], vertical: [56, 378] },
+	{ id: 'datalake', kind: 'store', name: 'data lake', role: 'valid records', horizontal: [832, 184], vertical: [56, 488] },
+	{ id: 'mounter', kind: 'module', name: 'mounter', role: 'aggregates', horizontal: [1024, 184], vertical: [56, 598] },
+	{ id: 'datamart', kind: 'mart', name: 'data mart', role: 'ready to query', horizontal: [1216, 184], vertical: [56, 708] },
+	{ id: 'janitor', kind: 'module', name: 'janitor', role: 'keeps states', horizontal: [448, 324], vertical: [292, 268], lower: true },
+	{ id: 'quarantine', kind: 'quarantine', name: 'quarantine', role: 'broke a rule', horizontal: [832, 324], vertical: [292, 488], lower: true },
+];
+
+const layouts = {
+	horizontal: {
+		viewBox: '0 0 1312 420',
+		thread: 'M 64 184 L 1216 184',
+		branch: 'M 640 184 C 736 184 736 324 832 324',
+		quarantinePath: 'M 64 184 L 640 184 C 736 184 736 324 832 324',
+		ringRadius: 46,
+	},
+	vertical: {
+		viewBox: '0 0 360 780',
+		thread: 'M 56 48 L 56 708',
+		branch: 'M 56 378 C 56 430 292 410 292 462',
+		quarantinePath: 'M 56 48 L 56 378 C 56 430 292 410 292 462',
+		ringRadius: 42,
+	},
+} as const;
+
+const flowDelays = [0, 1.5, 3, 4.5, 6, 7.5];
+
+function label(station: Station, layout: 'horizontal' | 'vertical') {
+	const [x, y] = station[layout];
+	if (layout === 'horizontal') {
+		const offset = station.lower ? 62 : 60;
+		return { x, nameY: y + offset, roleY: y + offset + 20, anchor: 'middle' };
+	}
+	if (station.lower) return { x, nameY: y + 60, roleY: y + 78, anchor: 'middle' };
+	return { x: x + 44, nameY: y - 2, roleY: y + 18, anchor: 'start' };
+}
+
+const positions = Object.fromEntries(stations.map((station) => [station.id, station.horizontal]));
+const description =
+	'A record goes from SEC EDGAR to the crawler, the inbox, the ingester, the data lake, the mounter and the data mart. A record that breaks a validation rule goes from the ingester to quarantine. The janitor keeps the state of each envelope in the inbox up to date.';
+---
+
+<figure class="record-journey not-content" data-record-journey data-mode={mode} data-positions={JSON.stringify(positions)}>
+	<div class="layout">
+		<div class="stage">
+			{(['horizontal', 'vertical'] as const).map((layout) => (
+				<svg class={`map map-${layout}`} viewBox={layouts[layout].viewBox} role="img" aria-label={description}>
+					{layout === 'horizontal' && (
+						<g aria-hidden="true">
+							<rect class="bus" x="0" y="16" width="1312" height="56" rx="12" />
+							<text class="bus-label" x="20" y="49">EVENT BUS</text>
+						</g>
+					)}
+					<path class="thread" d={layouts[layout].thread} />
+					<path class="branch" d={layouts[layout].branch} />
+					{mode === 'autoplay' && (
+						<g class="flow" aria-hidden="true">
+							{flowDelays.map((delay) => (
+								<circle class="flow-record" r="4">
+									<animateMotion dur="9s" begin={`-${delay}s`} repeatCount="indefinite" path={layouts[layout].thread} />
+								</circle>
+							))}
+							<circle class="flow-quarantined" r="4">
+								<animateMotion dur="6.5s" begin="-2s" repeatCount="indefinite" path={layouts[layout].quarantinePath} />
+							</circle>
+						</g>
+					)}
+					{stations.map((station) => {
+						const [x, y] = station[layout];
+						return (
+							<g class={`station station-${station.kind}`} aria-hidden="true">
+								<circle class="ring" data-station={station.id} cx={x} cy={y} r={layouts[layout].ringRadius} />
+								{station.kind === 'module' && (
+									<>
+										<rect class="flange" x={x - 30} y={y - 30} width="60" height="10" rx="3" />
+										<rect class="core" x={x - 18} y={y - 20} width="36" height="40" />
+										<rect class="flange" x={x - 30} y={y + 20} width="60" height="10" rx="3" />
+										<path class="wraps" d={[-12, -4, 4, 12].map((offset) => `M ${x - 18} ${y + offset} L ${x + 18} ${y + offset}`).join(' ')} />
+									</>
+								)}
+								{(station.kind === 'store' || station.kind === 'mart' || station.kind === 'quarantine') && (
+									<>
+										<path class="cylinder" d={`M ${x - 26} ${y - 20} L ${x - 26} ${y + 20} A 26 8 0 0 0 ${x + 26} ${y + 20} L ${x + 26} ${y - 20}`} />
+										<ellipse class="cylinder-top" cx={x} cy={y - 20} rx="26" ry="8" />
+										<path class="cylinder-line" d={`M ${x - 26} ${y} A 26 8 0 0 0 ${x + 26} ${y}`} />
+									</>
+								)}
+								{station.kind === 'source' && (
+									<>
+										<circle class="source" cx={x} cy={y} r="26" />
+										<path class="source-line" d={`M ${x - 26} ${y} L ${x + 26} ${y} M ${x} ${y - 26} C ${x + 12} ${y - 14} ${x + 12} ${y + 14} ${x} ${y + 26} M ${x} ${y - 26} C ${x - 12} ${y - 14} ${x - 12} ${y + 14} ${x} ${y + 26}`} />
+									</>
+								)}
+								<text class="name" x={label(station, layout).x} y={label(station, layout).nameY} text-anchor={label(station, layout).anchor}>{station.name}</text>
+								<text class="role" x={label(station, layout).x} y={label(station, layout).roleY} text-anchor={label(station, layout).anchor}>{station.role}</text>
+							</g>
+						);
+					})}
+					{layout === 'horizontal' && (
+						<g aria-hidden="true">
+							<g class="event">
+								<line class="event-connector" x1="0" y1="72" x2="0" y2="152" />
+								<rect class="event-chip" x="-110" y="30" width="220" height="28" rx="14" />
+								<text class="event-name" x="0" y="49" text-anchor="middle" />
+							</g>
+							<g class="pill">
+								<rect class="pill-background" x="0" y="0" width="240" height="30" rx="15" />
+								<text class="pill-text" x="120" y="20" text-anchor="middle">
+									<tspan class="pill-form">8-K</tspan>
+									<tspan class="pill-name" dx="8" />
+								</text>
+							</g>
+						</g>
+					)}
+				</svg>
+			))}
+		</div>
+
+		<div class="side">
+			<div class="narration">
+				<p class="caption" aria-live={mode === 'stepper' ? 'polite' : 'off'}></p>
+				<div class="controls">
+					{mode === 'autoplay' ? (
+						<button type="button" class="control" data-action="toggle">Pause</button>
+					) : (
+						<>
+							<button type="button" class="control" data-action="previous">Previous step</button>
+							<button type="button" class="control control-primary" data-action="next">Next step</button>
+							<span class="progress"></span>
+						</>
+					)}
+				</div>
+			</div>
+
+			<div class="panels">
+				<section class="panel" aria-label="Envelope of the record">
+					<p class="panel-title">Envelope of <span class="record-name"></span></p>
+					<dl class="envelope">
+						<div><dt>Source</dt><dd data-field="source"></dd></div>
+						<div><dt>Idempotency key</dt><dd data-field="key"></dd></div>
+						<div><dt>Correlation identifier</dt><dd data-field="correlation"></dd></div>
+						<div><dt>State</dt><dd data-field="state"></dd></div>
+						<div><dt>Retries</dt><dd data-field="retries"></dd></div>
+						<div><dt>Captured at</dt><dd data-field="captured"></dd></div>
+					</dl>
+				</section>
+				<section class="panel" aria-label="Events on the bus">
+					<p class="panel-title">Events on the bus</p>
+					<p class="log-empty">Events appear here as the record moves.</p>
+					<ol class="log"></ol>
+				</section>
+				<section class="panel" aria-label="Records so far">
+					<p class="panel-title">Records so far</p>
+					<dl class="counts">
+						<div><dt>in the inbox</dt><dd data-count="inbox">0</dd></div>
+						<div><dt>in the data lake</dt><dd data-count="lake">0</dd></div>
+						<div><dt>in quarantine</dt><dd data-count="quarantine" class="count-quarantine">0</dd></div>
+						<div><dt>in the data mart</dt><dd data-count="mart" class="count-mart">0</dd></div>
+					</dl>
+				</section>
+			</div>
+		</div>
+	</div>
+	<figcaption>
+		The three filings are made up to show the path of a record. The real pipeline is in the <a href={withBase('examples/sec-edgar/')}>SEC EDGAR example</a>.
+	</figcaption>
+</figure>
+
+<script>
+	type State = 'CAPTURED' | 'PERSISTED' | 'QUARANTINED';
+	type Counter = 'inbox' | 'lake' | 'quarantine' | 'mart';
+	type EventName = 'EnvelopeStored' | 'EnvelopePersisted' | 'EnvelopeQuarantined';
+
+	interface Step {
+		at: string;
+		caption: string;
+		event?: EventName;
+		eventAt?: string;
+		state?: State;
+		counter?: Counter;
+	}
+
+	interface FilingRecord {
+		name: string;
+		correlation: string;
+		key: string;
+		valid: boolean;
+	}
+
+	interface LogEntry {
+		time: string;
+		event: EventName;
+		record: string;
+	}
+
+	interface JourneyState {
+		position: number;
+		envelopeState: State | '';
+		capturedAt: string;
+		clock: number;
+		log: LogEntry[];
+		counts: Record<Counter, number>;
+	}
+
+	const records: FilingRecord[] = [
+		{ name: 'Northwind Holdings', correlation: '0001234567', key: '9f2c4d1b…e41a', valid: true },
+		{ name: 'Bluefin Logistics', correlation: '0002345678', key: '47ab90ce…0c3f', valid: true },
+		{ name: 'Harbor Mills', correlation: '0003456789', key: 'd1e85f27…a96b', valid: false },
+	];
+
+	const sharedSteps: Step[] = [
+		{ at: 'source', caption: 'SEC EDGAR returns the 8-K filings published the day before. Each filing becomes a record.' },
+		{ at: 'crawler', caption: 'The crawler reads the filing, wraps it in an envelope and stores it in the inbox.', event: 'EnvelopeStored', eventAt: 'crawler', state: 'CAPTURED', counter: 'inbox' },
+		{ at: 'inbox', caption: 'The inbox keeps the original data, unchanged, under its idempotency key.' },
+		{ at: 'ingester', caption: 'The ingester reacts to the event and checks the record against the validation rules of its source.' },
+	];
+
+	const validSteps: Step[] = [
+		{ at: 'datalake', caption: 'The record is valid, so the ingester writes it to the data lake.', event: 'EnvelopePersisted', eventAt: 'ingester', counter: 'lake' },
+		{ at: 'janitor', caption: 'The janitor sees the event and marks the envelope as persisted.', state: 'PERSISTED' },
+		{ at: 'mounter', caption: 'The mounter reads the data lake partition and aggregates it.' },
+		{ at: 'datamart', caption: 'The aggregated result is ready to query in the data mart.', counter: 'mart' },
+	];
+
+	const quarantinedSteps: Step[] = [
+		{ at: 'quarantine', caption: 'This filing has no file date, so the ingester sends it to quarantine with the list of violations.', event: 'EnvelopeQuarantined', eventAt: 'ingester', counter: 'quarantine' },
+		{ at: 'janitor', caption: 'The janitor marks the envelope as quarantined. The original data stays in the inbox.', state: 'QUARANTINED' },
+	];
+
+	const timeline = records.flatMap((record, recordIndex) =>
+		[...sharedSteps, ...(record.valid ? validSteps : quarantinedSteps)].map((step, stepIndex, steps) => ({
+			record,
+			recordIndex,
+			step,
+			stepIndex,
+			stepCount: steps.length,
+		})),
+	);
+
+	const clockIncrements = [212, 38, 145, 61, 87, 230, 410, 95];
+	const startOfDay = 9 * 3_600_000;
+	const visibleEvents = 5;
+	const stepMilliseconds = 2200;
+
+	function formatClock(milliseconds: number): string {
+		const pad = (value: number, size: number) => String(value).padStart(size, '0');
+		const hours = Math.floor(milliseconds / 3_600_000) % 24;
+		const minutes = Math.floor(milliseconds / 60_000) % 60;
+		const seconds = Math.floor(milliseconds / 1000) % 60;
+		return `${pad(hours, 2)}:${pad(minutes, 2)}:${pad(seconds, 2)}.${pad(milliseconds % 1000, 3)}`;
+	}
+
+	function initialState(): JourneyState {
+		return { position: -1, envelopeState: '', capturedAt: '', clock: startOfDay, log: [], counts: { inbox: 0, lake: 0, quarantine: 0, mart: 0 } };
+	}
+
+	function advance(state: JourneyState): JourneyState {
+		const position = state.position + 1;
+		const entry = timeline[position % timeline.length];
+		const clock = state.clock + clockIncrements[entry.stepIndex % clockIncrements.length];
+		const next: JourneyState = { ...state, position, clock, counts: { ...state.counts } };
+		if (entry.stepIndex === 0) {
+			next.envelopeState = '';
+			next.capturedAt = '';
+		}
+		if (entry.step.state) next.envelopeState = entry.step.state;
+		if (entry.step.state === 'CAPTURED') next.capturedAt = formatClock(clock);
+		if (entry.step.counter) next.counts[entry.step.counter] += 1;
+		if (entry.step.event) {
+			next.log = [{ time: formatClock(clock), event: entry.step.event, record: entry.record.name }, ...state.log].slice(0, visibleEvents);
+		}
+		return next;
+	}
+
+	function stateAt(position: number): JourneyState {
+		let state = initialState();
+		while (state.position < position) state = advance(state);
+		return state;
+	}
+
+	function setup(root: HTMLElement) {
+		const mode = root.dataset.mode;
+		const positions = JSON.parse(root.dataset.positions ?? '{}') as Record<string, [number, number]>;
+		const query = <T extends Element>(selector: string) => root.querySelector<T>(selector);
+		const caption = query<HTMLElement>('.caption')!;
+		const recordName = query<HTMLElement>('.record-name')!;
+		const log = query<HTMLOListElement>('.log')!;
+		const logEmpty = query<HTMLElement>('.log-empty')!;
+		const progress = query<HTMLElement>('.progress');
+		const pill = query<SVGGElement>('.pill');
+		const pillName = query<SVGTSpanElement>('.pill-name');
+		const event = query<SVGGElement>('.event');
+		const eventName = query<SVGTextElement>('.event-name');
+		const maps = [...root.querySelectorAll<SVGSVGElement>('svg.map')];
+		const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+		let previousNewestEvent: LogEntry | undefined;
+
+		function render(state: JourneyState) {
+			const entry = timeline[state.position % timeline.length];
+			const { step, record } = entry;
+			const quarantined = step.at === 'quarantine' || state.envelopeState === 'QUARANTINED';
+			root.querySelectorAll<SVGCircleElement>('.ring').forEach((ring) => ring.classList.toggle('is-active', ring.dataset.station === step.at));
+			const [x, y] = positions[step.at];
+			const lower = step.at === 'janitor' || step.at === 'quarantine';
+			if (pill) pill.style.transform = lower ? `translate(${x + 52}px, ${y - 15}px)` : `translate(${Math.max(0, x - 120)}px, 104px)`;
+			pill?.classList.toggle('is-quarantined', quarantined);
+			if (pillName) pillName.textContent = record.name;
+			if (event && eventName) {
+				event.classList.toggle('is-visible', Boolean(step.event));
+				event.dataset.event = step.event ?? '';
+				if (step.event && step.eventAt) {
+					event.style.transform = `translate(${positions[step.eventAt][0]}px, 0px)`;
+					eventName.textContent = step.event;
+				}
+			}
+			caption.textContent = step.caption;
+			recordName.textContent = record.name;
+			const created = state.envelopeState !== '';
+			const fields: Record<string, string> = {
+				source: created ? 'SEC-EDGAR-Daily-Api' : '—',
+				key: created ? record.key : '—',
+				correlation: created ? record.correlation : '—',
+				state: created ? state.envelopeState : 'not captured yet',
+				retries: created ? '0' : '—',
+				captured: created ? state.capturedAt : '—',
+			};
+			root.querySelectorAll<HTMLElement>('[data-field]').forEach((field) => {
+				field.textContent = fields[field.dataset.field ?? ''] ?? '';
+				if (field.dataset.field === 'state') field.dataset.state = state.envelopeState;
+			});
+			root.querySelectorAll<HTMLElement>('[data-count]').forEach((count) => {
+				count.textContent = String(state.counts[count.dataset.count as Counter]);
+			});
+			const newestEvent = state.log[0];
+			const hasNewEvent = newestEvent !== undefined && newestEvent !== previousNewestEvent;
+			previousNewestEvent = newestEvent;
+			log.replaceChildren(
+				...state.log.map((item, index) => {
+					const line = document.createElement('li');
+					line.dataset.event = item.event;
+					line.classList.toggle('is-new', index === 0 && hasNewEvent);
+					const time = document.createElement('span');
+					time.className = 'log-time';
+					time.textContent = item.time;
+					const name = document.createElement('span');
+					name.className = 'log-event';
+					name.textContent = item.event;
+					const subject = document.createElement('span');
+					subject.className = 'log-record';
+					subject.textContent = item.record;
+					line.append(time, name, subject);
+					return line;
+				}),
+			);
+			logEmpty.hidden = state.log.length > 0;
+			if (progress) {
+				progress.textContent = `Record ${entry.recordIndex + 1} of ${records.length}, step ${entry.stepIndex + 1} of ${entry.stepCount}`;
+			}
+		}
+
+		let state = advance(initialState());
+		render(state);
+		requestAnimationFrame(() => root.classList.add('is-ready'));
+
+		if (mode === 'stepper') {
+			const previous = query<HTMLButtonElement>('[data-action="previous"]')!;
+			const next = query<HTMLButtonElement>('[data-action="next"]')!;
+			const last = timeline.length - 1;
+			const refreshButtons = () => {
+				previous.disabled = state.position === 0;
+				next.textContent = state.position === last ? 'Start again' : 'Next step';
+			};
+			previous.addEventListener('click', () => {
+				state = stateAt(state.position - 1);
+				render(state);
+				refreshButtons();
+			});
+			next.addEventListener('click', () => {
+				state = state.position === last ? advance(initialState()) : advance(state);
+				render(state);
+				refreshButtons();
+			});
+			refreshButtons();
+			return;
+		}
+
+		const toggle = query<HTMLButtonElement>('[data-action="toggle"]')!;
+		let pausedByUser = reducedMotion;
+		let onScreen = false;
+		let timer: number | undefined;
+
+		const refresh = () => {
+			const running = !pausedByUser && onScreen && !document.hidden;
+			toggle.textContent = pausedByUser ? 'Play' : 'Pause';
+			maps.forEach((map) => (running ? map.unpauseAnimations() : map.pauseAnimations()));
+			if (running && timer === undefined) {
+				timer = window.setInterval(() => {
+					state = advance(state);
+					render(state);
+				}, stepMilliseconds);
+			}
+			if (!running && timer !== undefined) {
+				window.clearInterval(timer);
+				timer = undefined;
+			}
+		};
+
+		toggle.addEventListener('click', () => {
+			pausedByUser = !pausedByUser;
+			refresh();
+		});
+		document.addEventListener('visibilitychange', refresh);
+		new IntersectionObserver((entries) => {
+			onScreen = entries.some((entry) => entry.isIntersecting);
+			refresh();
+		}, { threshold: 0.25 }).observe(root);
+		refresh();
+	}
+
+	document.querySelectorAll<HTMLElement>('[data-record-journey]').forEach(setup);
+</script>
+
+<style>
+	.record-journey {
+		--journey-ink: #121a24;
+		--journey-panel: #1a2430;
+		--journey-border: #2a3644;
+		--journey-rule: #243040;
+		--journey-text: #e6eaf0;
+		--journey-muted: #a9b4c2;
+		--journey-faint: #8b96a4;
+		--journey-thread: #d9780b;
+		--journey-thread-light: #f0a24a;
+		--journey-store: #c9d1dc;
+		--journey-quarantine: #ef6461;
+		--journey-quarantine-light: #f4a3a1;
+		--journey-stored: #8dbef2;
+
+		container-type: inline-size;
+		margin: 2rem 0;
+		padding: clamp(1rem, 3cqi, 2.5rem);
+		border: 1px solid var(--journey-border);
+		border-radius: 1rem;
+		background: var(--journey-ink);
+		color: var(--journey-text);
+		font-family: var(--__sl-font);
+	}
+
+	.layout {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+		gap: 1.5rem;
+	}
+
+	.map {
+		display: block;
+		width: 100%;
+		height: auto;
+		overflow: visible;
+	}
+
+	.map-vertical {
+		max-width: 22rem;
+		margin-inline: auto;
+	}
+
+	@container (min-width: 960px) {
+		.map-vertical {
+			display: none;
+		}
+		.panels {
+			grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.3fr) minmax(0, 0.8fr);
+		}
+	}
+
+	@container (max-width: 959.98px) {
+		.map-horizontal {
+			display: none;
+		}
+	}
+
+	@container (min-width: 600px) and (max-width: 959.98px) {
+		.layout {
+			grid-template-columns: minmax(0, 19rem) minmax(0, 1fr);
+			align-items: start;
+		}
+	}
+
+	.bus {
+		fill: #16202b;
+		stroke: var(--journey-border);
+	}
+
+	.bus-label {
+		fill: var(--journey-faint);
+		font-size: 14px;
+		font-weight: 600;
+		letter-spacing: 0.06em;
+	}
+
+	.thread {
+		fill: none;
+		stroke: var(--journey-thread);
+		stroke-width: 2.5;
+	}
+
+	.branch {
+		fill: none;
+		stroke: #8a3b3b;
+		stroke-width: 2;
+	}
+
+	.flow-record {
+		fill: var(--journey-thread-light);
+	}
+
+	.flow-quarantined {
+		fill: var(--journey-quarantine);
+	}
+
+	.ring {
+		fill: rgba(217, 120, 11, 0.12);
+		stroke: var(--journey-thread);
+		stroke-width: 2;
+		opacity: 0;
+		transition: opacity 0.35s ease;
+	}
+
+	.ring.is-active {
+		opacity: 1;
+	}
+
+	.flange {
+		fill: var(--journey-ink);
+		stroke: var(--journey-text);
+		stroke-width: 1.5;
+	}
+
+	.core {
+		fill: var(--journey-panel);
+		stroke: var(--journey-text);
+		stroke-width: 1.5;
+	}
+
+	.wraps {
+		stroke: var(--journey-thread);
+		stroke-width: 2;
+	}
+
+	.cylinder {
+		fill: var(--journey-ink);
+		stroke: var(--journey-store);
+		stroke-width: 1.5;
+	}
+
+	.cylinder-top {
+		fill: var(--journey-rule);
+		stroke: var(--journey-store);
+		stroke-width: 1.5;
+	}
+
+	.cylinder-line {
+		fill: none;
+		stroke: var(--journey-store);
+		stroke-width: 1.25;
+	}
+
+	.station-mart .cylinder,
+	.station-mart .cylinder-top,
+	.station-mart .cylinder-line {
+		stroke: var(--journey-thread-light);
+	}
+
+	.station-mart .cylinder-top {
+		fill: #3a2a14;
+	}
+
+	.station-quarantine .cylinder,
+	.station-quarantine .cylinder-top,
+	.station-quarantine .cylinder-line {
+		stroke: var(--journey-quarantine);
+	}
+
+	.station-quarantine .cylinder-top {
+		fill: #3d1f18;
+	}
+
+	.source {
+		fill: var(--journey-ink);
+		stroke: var(--journey-faint);
+		stroke-width: 1.5;
+		stroke-dasharray: 4 4;
+	}
+
+	.source-line {
+		fill: none;
+		stroke: var(--journey-faint);
+		stroke-width: 1.25;
+	}
+
+	.name {
+		fill: var(--journey-text);
+		font-family: var(--__sl-font-mono);
+		font-size: 18px;
+		font-weight: 600;
+	}
+
+	.role {
+		fill: var(--journey-muted);
+		font-size: 16px;
+	}
+
+	.map-vertical .name {
+		font-size: 15px;
+	}
+
+	.map-vertical .role {
+		font-size: 13px;
+	}
+
+	.station-quarantine .name {
+		fill: var(--journey-quarantine-light);
+	}
+
+	.event {
+		opacity: 0;
+		transition: opacity 0.35s ease;
+	}
+
+	.event.is-visible {
+		opacity: 1;
+	}
+
+	.event-connector {
+		stroke: var(--event-color, var(--journey-stored));
+		stroke-width: 2;
+		stroke-dasharray: 5 5;
+	}
+
+	.event-chip {
+		fill: var(--journey-ink);
+		stroke: var(--event-color, var(--journey-stored));
+	}
+
+	.event-name {
+		fill: var(--event-color, var(--journey-stored));
+		font-family: var(--__sl-font-mono);
+		font-size: 15px;
+		font-weight: 600;
+	}
+
+	.event[data-event='EnvelopePersisted'] {
+		--event-color: var(--journey-thread-light);
+	}
+
+	.event[data-event='EnvelopeQuarantined'] {
+		--event-color: var(--journey-quarantine-light);
+	}
+
+	.is-ready .pill {
+		transition: transform 0.9s cubic-bezier(0.65, 0, 0.35, 1);
+	}
+
+	.pill-background {
+		fill: var(--journey-thread-light);
+	}
+
+	.pill.is-quarantined .pill-background {
+		fill: var(--journey-quarantine-light);
+	}
+
+	.pill-text {
+		fill: var(--journey-ink);
+		font-size: 15px;
+		font-weight: 700;
+	}
+
+	.pill-form {
+		font-family: var(--__sl-font-mono);
+	}
+
+	.side {
+		display: grid;
+		gap: 1rem;
+	}
+
+	.narration {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.75rem 1.5rem;
+	}
+
+	.caption {
+		flex: 1 1 24rem;
+		margin: 0;
+		min-height: 3.2em;
+		font-size: 1.125rem;
+		line-height: 1.6;
+		font-weight: 500;
+	}
+
+	.controls {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.5rem 0.75rem;
+	}
+
+	.control {
+		min-height: 2.75rem;
+		padding: 0 1.25rem;
+		border: 1px solid #3a4656;
+		border-radius: 999px;
+		background: var(--journey-panel);
+		color: var(--journey-text);
+		font: inherit;
+		font-size: 0.9375rem;
+		font-weight: 600;
+		cursor: pointer;
+	}
+
+	.control:hover:not(:disabled) {
+		border-color: var(--journey-thread-light);
+	}
+
+	.control:focus-visible {
+		outline: 2px solid var(--journey-thread-light);
+		outline-offset: 2px;
+	}
+
+	.control:disabled {
+		opacity: 0.45;
+		cursor: default;
+	}
+
+	.control-primary {
+		border-color: var(--journey-thread-light);
+		background: var(--journey-thread-light);
+		color: var(--journey-ink);
+	}
+
+	.progress {
+		color: var(--journey-muted);
+		font-size: 0.875rem;
+	}
+
+	.panels {
+		display: grid;
+		gap: 1rem;
+	}
+
+	.panel {
+		padding: 1.25rem 1.5rem;
+		border: 1px solid var(--journey-border);
+		border-radius: 0.875rem;
+		background: var(--journey-panel);
+		min-width: 0;
+	}
+
+	.panel-title {
+		margin: 0 0 0.75rem;
+		color: var(--journey-faint);
+		font-size: 0.8125rem;
+		font-weight: 600;
+		letter-spacing: 0.05em;
+		text-transform: uppercase;
+	}
+
+	.envelope,
+	.counts {
+		margin: 0;
+	}
+
+	.envelope div {
+		display: flex;
+		justify-content: space-between;
+		gap: 1rem;
+		padding-block: 0.3rem;
+		border-top: 1px solid var(--journey-rule);
+		font-size: 0.875rem;
+	}
+
+	.envelope dt {
+		color: var(--journey-muted);
+	}
+
+	.envelope dd {
+		margin: 0;
+		font-family: var(--__sl-font-mono);
+		font-size: 0.8125rem;
+		font-weight: 600;
+		text-align: end;
+		overflow-wrap: anywhere;
+	}
+
+	.envelope dd[data-state=''] {
+		color: var(--journey-faint);
+	}
+
+	.envelope dd[data-state='CAPTURED'] {
+		color: var(--journey-stored);
+	}
+
+	.envelope dd[data-state='PERSISTED'] {
+		color: var(--journey-thread-light);
+	}
+
+	.envelope dd[data-state='QUARANTINED'] {
+		color: var(--journey-quarantine-light);
+	}
+
+	.log-empty {
+		margin: 0;
+		color: var(--journey-faint);
+		font-size: 0.875rem;
+	}
+
+	.log {
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.log :global(li) {
+		display: grid;
+		grid-template-columns: auto auto minmax(0, 1fr);
+		gap: 1rem;
+		padding-block: 0.4rem;
+		border-top: 1px solid var(--journey-rule);
+		font-family: var(--__sl-font-mono);
+		font-size: 0.8125rem;
+		white-space: nowrap;
+	}
+
+	.log :global(li.is-new) {
+		animation: log-arrive 0.4s ease-out;
+	}
+
+	.log :global(.log-time) {
+		color: var(--journey-faint);
+	}
+
+	.log :global(.log-event) {
+		font-weight: 600;
+		color: var(--journey-stored);
+	}
+
+	.log :global(li[data-event='EnvelopePersisted'] .log-event) {
+		color: var(--journey-thread-light);
+	}
+
+	.log :global(li[data-event='EnvelopeQuarantined'] .log-event) {
+		color: var(--journey-quarantine-light);
+	}
+
+	.log :global(.log-record) {
+		color: var(--journey-muted);
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	.counts {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 0.75rem 1rem;
+	}
+
+	.counts div {
+		display: flex;
+		flex-direction: column-reverse;
+		justify-content: flex-end;
+	}
+
+	.counts dd {
+		margin: 0;
+		color: var(--journey-store);
+		font-size: 1.875rem;
+		line-height: 1.2;
+		font-weight: 700;
+	}
+
+	.counts dd.count-quarantine {
+		color: var(--journey-quarantine-light);
+	}
+
+	.counts dd.count-mart {
+		color: var(--journey-thread-light);
+	}
+
+	.counts dt {
+		color: var(--journey-muted);
+		font-size: 0.8125rem;
+	}
+
+	figcaption {
+		margin-top: 1.25rem;
+		color: var(--journey-muted);
+		font-size: 0.875rem;
+	}
+
+	figcaption a {
+		color: var(--journey-thread-light);
+	}
+
+	@keyframes log-arrive {
+		from {
+			opacity: 0;
+			transform: translateY(6px);
+		}
+		to {
+			opacity: 1;
+			transform: none;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.flow {
+			display: none;
+		}
+		.ring,
+		.event,
+		.pill {
+			transition: none;
+		}
+		.log :global(li) {
+			animation: none;
+		}
+	}
+</style>

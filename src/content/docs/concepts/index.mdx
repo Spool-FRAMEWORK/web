@@ -6,7 +6,7 @@ sidebar:
   order: 1
 ---
 
-import RecordPath from '../../../components/diagrams/RecordPath.astro';
+import RecordJourney from '../../../components/diagrams/RecordJourney.astro';
 
 Spool takes data from external sources to a data mart in separate steps. Each step is a module, and modules never call each other. One publishes an event when it finishes its work, and the next one reacts to it. That is what makes every record traceable, and what lets the same pipeline run in one process or across several machines.
 
@@ -34,7 +34,7 @@ Modules share three pieces of infrastructure, each one behind a port with interc
 
 ## The path of a record
 
-<RecordPath />
+<RecordJourney mode="stepper" />
 
 1. The crawler reads the source and splits the response into records. It wraps each record in an envelope, stores it in the inbox with the state `CAPTURED` and publishes `EnvelopeStored`.
 2. The ingester receives `EnvelopeStored`, reads the envelope from the inbox and runs the validation rules for its source.

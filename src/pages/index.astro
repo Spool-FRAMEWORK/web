@@ -1,7 +1,7 @@
 ---
 import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
 import { Code } from '@astrojs/starlight/components';
-import RecordPath from '../components/diagrams/RecordPath.astro';
+import RecordJourney from '../components/diagrams/RecordJourney.astro';
 import { mavenDependency, site, withBase } from '../data/site';
 
 
@@ -45,7 +45,7 @@ const guides = [
 		</nav>
 
 		<div class="record-path">
-			<RecordPath />
+			<RecordJourney mode="autoplay" />
 		</div>
 
 		<div class="columns">
