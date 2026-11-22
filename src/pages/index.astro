@@ -2,12 +2,15 @@
 import LandingLayout from '../layouts/LandingLayout.astro';
 import LandingHeader from '../components/landing/LandingHeader.astro';
 import LandingFooter from '../components/landing/LandingFooter.astro';
+import Hero from '../components/landing/Hero.astro';
 import { site } from '../data/site';
 ---
 
 <LandingLayout title={`${site.name}, data pipelines you can trace`} description={site.description}>
 	<LandingHeader />
-	<main id="main"></main>
+	<main id="main">
+		<Hero />
+	</main>
 	<div class="ink-band">
 		<LandingFooter />
 	</div>
