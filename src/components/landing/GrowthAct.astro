@@ -1,0 +1,342 @@
+---
+import { act, chapters, islandIds, pieces, placeOf, routePath, stageSize } from './growth';
+
+const illustrations = import.meta.glob<string>('./illustrations/*.svg', { query: '?raw', import: 'default', eager: true });
+const illustration = (name: string) => illustrations[`./illustrations/${name}.svg`];
+
+const pieceWidth = 150;
+const pieceTop = 50;
+const width = stageSize.width * act.scale;
+const height = stageSize.height * act.scale;
+
+const scenes = chapters.map((chapter) => ({
+	pieces: Object.fromEntries(
+		Object.keys(pieces)
+			.filter((id) => chapter.show.includes(id))
+			.map((id) => {
+				const [x, y] = placeOf(chapter, id);
+				return [id, [(x - pieceWidth / 2) * act.scale, (y - pieceTop) * act.scale]];
+			}),
+	),
+	islands: Object.fromEntries(chapter.islands.map((island) => [island.id, island.box])),
+	routes: chapter.routes.map(([from, to, kind], order) => ({
+		d: routePath(placeOf(chapter, from), placeOf(chapter, to)),
+		kind: kind ?? 'record',
+		duration: kind === 'push' ? 1.2 : 2.6,
+		delay: -order * 0.37,
+	})),
+	badges: (chapter.badges ?? []).map((badge) => ({ text: badge.text, tone: badge.tone, at: [badge.at[0] * act.scale, badge.at[1] * act.scale] })),
+	bus: chapter.bus,
+	cloud: Boolean(chapter.cloud),
+}));
+
+const islandLabels = Object.fromEntries(chapters.flatMap((chapter) => chapter.islands.map((island) => [island.id, island.label])));
+const firstScene = scenes[0];
+---
+
+<div class="act" data-growth-act data-scenes={JSON.stringify(scenes)} style={`left: ${act.x}px; top: ${act.y}px; width: ${width}px; height: ${height}px`}>
+	<svg class="act-lines" width={width} height={height} viewBox={`0 0 ${stageSize.width} ${stageSize.height}`}>
+		<rect class="cloud" data-cloud x="140" y="30" width="1160" height="596" rx="32"></rect>
+		<text class="cloud-label" data-cloud x="166" y="37">AWS, provisioned with Terraform</text>
+		{islandIds.map((id) => (
+			<g class="island is-hidden" data-island={id}>
+				<rect rx="24"></rect>
+				<text>{islandLabels[id]}</text>
+			</g>
+		))}
+		<rect class="rail" data-rail x="150" y="616" width="1140" height="8" rx="4"></rect>
+		<text class="rail-label" data-rail-label x="1290" y="604" text-anchor="end">IN MEMORY BUS</text>
+		<g data-routes></g>
+	</svg>
+	{Object.entries(pieces).map(([id, piece]) => {
+		const place = firstScene.pieces[id];
+		return (
+			<div class:list={['piece', { 'is-hidden': !place, 'is-quarantine': piece.quarantine }]} data-piece={id} style={place ? `left: ${place[0]}px; top: ${place[1]}px` : ''}>
+				<div class="piece-art" set:html={illustration(piece.illustration)}></div>
+				<span class="piece-label">{piece.label}</span>
+			</div>
+		);
+	})}
+	{[0, 1].map((index) => <div class="badge is-hidden" data-badge={index}></div>)}
+</div>
+
+<script>
+	interface Scene {
+		pieces: Record<string, [number, number]>;
+		islands: Record<string, [number, number, number, number]>;
+		routes: { d: string; kind: string; duration: number; delay: number }[];
+		badges: { text: string; tone: string; at: [number, number] }[];
+		bus: 'memory' | 'kafka';
+		cloud: boolean;
+	}
+
+	const svgNamespace = 'http://www.w3.org/2000/svg';
+
+	function setup(root: HTMLElement) {
+		const scenes = JSON.parse(root.dataset.scenes ?? '[]') as Scene[];
+		const routes = root.querySelector<SVGGElement>('[data-routes]')!;
+		const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+		let current = -1;
+
+		function drawRoutes(scene: Scene) {
+			routes.replaceChildren(
+				...scene.routes.flatMap((route) => {
+					const line = document.createElementNS(svgNamespace, 'path');
+					line.setAttribute('d', route.d);
+					line.setAttribute('pathLength', '1');
+					line.setAttribute('class', `route route-${route.kind}`);
+					if (reducedMotion) return [line];
+					const dot = document.createElementNS(svgNamespace, 'circle');
+					dot.setAttribute('r', '5');
+					dot.setAttribute('class', `traveller traveller-${route.kind}`);
+					const motion = document.createElementNS(svgNamespace, 'animateMotion');
+					motion.setAttribute('dur', `${route.duration}s`);
+					motion.setAttribute('begin', `${route.delay}s`);
+					motion.setAttribute('repeatCount', 'indefinite');
+					motion.setAttribute('path', route.d);
+					dot.append(motion);
+					return [line, dot];
+				}),
+			);
+		}
+
+		function show(index: number) {
+			if (index === current) return;
+			current = index;
+			const scene = scenes[index];
+			root.querySelectorAll<HTMLElement>('[data-piece]').forEach((piece) => {
+				const place = scene.pieces[piece.dataset.piece ?? ''];
+				piece.classList.toggle('is-hidden', !place);
+				if (place) {
+					piece.style.left = `${place[0]}px`;
+					piece.style.top = `${place[1]}px`;
+				}
+			});
+			root.querySelectorAll<SVGGElement>('[data-island]').forEach((island) => {
+				const box = scene.islands[island.dataset.island ?? ''];
+				island.classList.toggle('is-hidden', !box);
+				if (!box) return;
+				const [x, y, width, height] = box;
+				const rect = island.querySelector('rect')!;
+				rect.setAttribute('x', String(x));
+				rect.setAttribute('y', String(y));
+				rect.setAttribute('width', String(width));
+				rect.setAttribute('height', String(height));
+				const label = island.querySelector('text')!;
+				label.setAttribute('x', String(x + 18));
+				label.setAttribute('y', String(y + 7));
+			});
+			root.querySelectorAll<SVGElement>('[data-cloud]').forEach((cloud) => cloud.classList.toggle('is-hidden', !scene.cloud));
+			root.querySelector('[data-rail]')!.classList.toggle('is-kafka', scene.bus === 'kafka');
+			root.querySelector('[data-rail-label]')!.textContent = scene.bus === 'kafka' ? 'KAFKA' : 'IN MEMORY BUS';
+			root.querySelectorAll<HTMLElement>('[data-badge]').forEach((badge, badgeIndex) => {
+				const content = scene.badges[badgeIndex];
+				badge.classList.toggle('is-hidden', !content);
+				if (!content) return;
+				badge.textContent = content.text;
+				badge.dataset.tone = content.tone;
+				badge.style.left = `${content.at[0]}px`;
+				badge.style.top = `${content.at[1]}px`;
+			});
+			drawRoutes(scene);
+		}
+
+		root.addEventListener('growth:chapter', (event) => show((event as CustomEvent<number>).detail));
+		show(0);
+		requestAnimationFrame(() => root.classList.add('is-ready'));
+	}
+
+	document.querySelectorAll<HTMLElement>('[data-growth-act]').forEach(setup);
+</script>
+
+<style>
+	.act {
+		position: absolute;
+	}
+
+	.act-lines {
+		position: absolute;
+		left: 0;
+		top: 0;
+		overflow: visible;
+	}
+
+	.cloud {
+		fill: rgba(242, 193, 78, 0.05);
+		stroke: var(--landing-warn);
+		stroke-width: 2;
+		stroke-dasharray: 8 6;
+	}
+
+	.cloud-label {
+		fill: #8a6d1f;
+		font-family: var(--landing-mono);
+		font-size: 17px;
+		paint-order: stroke;
+		stroke: #ffffff;
+		stroke-width: 6px;
+	}
+
+	.island rect {
+		fill: rgba(255, 255, 255, 0.6);
+		stroke: #b9c6ef;
+		stroke-width: 2;
+		stroke-dasharray: 8 6;
+	}
+
+	.island text {
+		fill: var(--landing-blue);
+		font-family: var(--landing-mono);
+		font-size: 15px;
+		paint-order: stroke;
+		stroke: #ffffff;
+		stroke-width: 6px;
+	}
+
+	.island,
+	.cloud,
+	.cloud-label {
+		transition: opacity 0.6s ease;
+	}
+
+	:is(.island, .cloud, .cloud-label).is-hidden {
+		opacity: 0;
+	}
+
+	.rail {
+		fill: #e3e8f5;
+		transition: fill 0.5s ease;
+	}
+
+	.rail.is-kafka {
+		fill: #c3ceee;
+	}
+
+	.rail-label {
+		fill: var(--landing-muted);
+		font-family: var(--landing-mono);
+		font-size: 14px;
+		letter-spacing: 0.06em;
+	}
+
+	.act :global(.route) {
+		fill: none;
+		stroke: #b3c2f5;
+		stroke-width: 3;
+		stroke-linecap: round;
+		stroke-dasharray: 1;
+		stroke-dashoffset: 1;
+		animation: act-draw 1s cubic-bezier(0.65, 0, 0.35, 1) 0.7s forwards;
+	}
+
+	.act :global(.route-quarantine) {
+		stroke: var(--landing-warn);
+		stroke-dasharray: 0.015 0.015;
+		stroke-dashoffset: 0;
+		animation: none;
+	}
+
+	.act :global(.traveller) {
+		fill: var(--landing-blue);
+		stroke: rgba(31, 69, 200, 0.18);
+		stroke-width: 8;
+		paint-order: stroke;
+	}
+
+	.act :global(.traveller-quarantine) {
+		fill: #c99a1e;
+		stroke: rgba(242, 193, 78, 0.3);
+	}
+
+	.piece {
+		position: absolute;
+		width: 210px;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		pointer-events: none;
+		transition: opacity 0.6s ease;
+	}
+
+	.is-ready .piece {
+		transition: left 1s cubic-bezier(0.65, 0, 0.35, 1), top 1s cubic-bezier(0.65, 0, 0.35, 1), opacity 0.6s ease;
+	}
+
+	.piece.is-hidden {
+		opacity: 0;
+	}
+
+	.piece-art {
+		width: 157px;
+	}
+
+	.piece-art :global(svg) {
+		display: block;
+		width: 100%;
+		height: auto;
+		overflow: visible;
+	}
+
+	.piece-label {
+		margin-top: 2px;
+		padding: 2px 8px;
+		border-radius: 6px;
+		background: rgba(255, 255, 255, 0.94);
+		font-family: var(--landing-mono);
+		font-size: 17px;
+		font-weight: 500;
+		white-space: nowrap;
+		color: var(--landing-text);
+	}
+
+	.piece.is-quarantine .piece-label {
+		color: #8a6d1f;
+	}
+
+	.badge {
+		position: absolute;
+		padding: 7px 14px;
+		border-radius: 12px;
+		font-family: var(--landing-mono);
+		font-size: 17px;
+		white-space: nowrap;
+		box-shadow: 0 8px 20px rgba(13, 18, 32, 0.14);
+		transition: opacity 0.5s ease;
+	}
+
+	.badge[data-tone='warn'] {
+		background: var(--landing-warn);
+		color: var(--landing-ink);
+	}
+
+	.badge[data-tone='ink'] {
+		background: var(--landing-ink);
+		color: #ffffff;
+	}
+
+	.badge.is-hidden {
+		opacity: 0;
+	}
+
+	@keyframes act-draw {
+		to {
+			stroke-dashoffset: 0;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.piece,
+		.is-ready .piece,
+		.badge,
+		.island,
+		.cloud,
+		.cloud-label {
+			transition: none;
+		}
+
+		.act :global(.route) {
+			animation: none;
+			stroke-dashoffset: 0;
+		}
+	}
+</style>
