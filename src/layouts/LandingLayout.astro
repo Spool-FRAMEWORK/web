@@ -1,6 +1,8 @@
 ---
 import '../styles/landing.css';
 import { fontsStylesheetUrl, site, withBase } from '../data/site';
+import { landingSocialCardPath } from '../social/cards';
+import { socialImageTags } from '../social/head';
 
 interface Props {
 	title: string;
@@ -9,6 +11,7 @@ interface Props {
 
 const { title, description } = Astro.props;
 const canonical = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : undefined;
+const socialImage = new URL(withBase(landingSocialCardPath), Astro.site ?? Astro.url).href;
 ---
 
 <!doctype html>
@@ -22,6 +25,10 @@ const canonical = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : un
 		<meta property="og:title" content={title} />
 		<meta property="og:description" content={description} />
 		<meta property="og:site_name" content={site.name} />
+		<meta property="og:type" content="website" />
+		{canonical && <meta property="og:url" content={canonical} />}
+		<meta name="twitter:card" content="summary_large_image" />
+		{socialImageTags(socialImage, site.headline).map(({ attrs }) => <meta {...attrs} />)}
 		<link rel="icon" href={withBase('favicon.svg')} type="image/svg+xml" />
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
