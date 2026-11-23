@@ -1,0 +1,996 @@
+---
+import { withBase } from '../../data/site';
+
+type Layout = 'horizontal' | 'vertical';
+type StationId = 'captured' | 'persisted' | 'quarantined' | 'deleted';
+type Box = { x: number; y: number; width: number; height: number };
+
+interface Station {
+	id: StationId;
+	name: string;
+	roles: string[];
+	box: Record<Layout, Box>;
+}
+
+const stations: Station[] = [
+	{ id: 'captured', name: 'CAPTURED', roles: ['set by the crawler'], box: { horizontal: { x: 20, y: 124, width: 260, height: 140 }, vertical: { x: 80, y: 56, width: 240, height: 104 } } },
+	{ id: 'persisted', name: 'PERSISTED', roles: ['set by the janitor'], box: { horizontal: { x: 540, y: 20, width: 260, height: 140 }, vertical: { x: 16, y: 240, width: 172, height: 104 } } },
+	{ id: 'quarantined', name: 'QUARANTINED', roles: ['set by the janitor', 'kept for review'], box: { horizontal: { x: 540, y: 240, width: 260, height: 140 }, vertical: { x: 212, y: 240, width: 172, height: 104 } } },
+	{ id: 'deleted', name: 'deleted', roles: ['gone from the inbox', 'still in the data lake'], box: { horizontal: { x: 960, y: 20, width: 260, height: 140 }, vertical: { x: 16, y: 400, width: 172, height: 104 } } },
+];
+
+const layouts = {
+	horizontal: {
+		viewBox: '0 0 1240 530',
+		tokenWidth: 220,
+		tokenHeight: 48,
+		routes: {
+			loop: 'M 100 124 C 100 30, 200 30, 200 124',
+			upper: 'M 280 194 C 410 194, 410 90, 540 90',
+			lower: 'M 280 194 C 410 194, 410 310, 540 310',
+			ttl: 'M 800 90 L 960 90',
+		},
+		chips: [
+			{ route: 'loop', x: 52, y: 0, width: 196, text: 'published again', dynamic: 'loop' },
+			{ route: 'upper', x: 292, y: 58, width: 188, text: 'EnvelopePersisted', mono: true },
+			{ route: 'lower', x: 292, y: 302, width: 188, text: 'EnvelopeQuarantined', mono: true, dynamic: 'lower' },
+			{ route: 'ttl', x: 820, y: 58, width: 120, text: 'after the TTL' },
+		],
+		rail: { y: 488, segments: ['M 60 488 L 760 488', 'M 772 488 L 784 488 M 796 488 L 808 488', 'M 820 488 L 900 488'], ticks: [[60, '0'], [220, '3 min'], [380, '6 min'], [540, '9 min'], [700, '12 min'], [900, '1 day']], labelX: 60 },
+	},
+	vertical: {
+		viewBox: '0 0 400 600',
+		tokenWidth: 160,
+		tokenHeight: 40,
+		routes: {
+			loop: 'M 160 56 C 160 4, 240 4, 240 56',
+			upper: 'M 200 160 C 200 200, 102 200, 102 240',
+			lower: 'M 200 160 C 200 200, 298 200, 298 240',
+			ttl: 'M 102 344 L 102 400',
+		},
+		chips: [],
+		rail: { y: 560, segments: ['M 30 560 L 250 560', 'M 262 560 L 270 560 M 280 560 L 288 560', 'M 300 560 L 330 560'], ticks: [[30, '0'], [80, '3'], [130, '6'], [180, '9'], [230, '12 min'], [330, '1 day']], labelX: 30 },
+	},
+} as const;
+
+const routeNames = ['loop', 'upper', 'lower', 'ttl'] as const;
+
+function tokenPosition(station: Station, layout: Layout) {
+	const { x, y, height } = station.box[layout];
+	const inset = layout === 'horizontal' ? 20 : 6;
+	return [x + inset, y + height - layouts[layout].tokenHeight - (layout === 'horizontal' ? 10 : 8)];
+}
+
+const geometry = Object.fromEntries(
+	(['horizontal', 'vertical'] as const).map((layout) => [
+		layout,
+		{
+			tokens: Object.fromEntries(stations.map((station) => [station.id, tokenPosition(station, layout)])),
+			routes: layouts[layout].routes,
+			ticks: layouts[layout].rail.ticks.map(([x]) => x),
+		},
+	]),
+);
+
+const description =
+	'An envelope starts in CAPTURED. When the ingester writes the record to the data lake, the janitor marks it PERSISTED, and deletes it from the inbox after the TTL. When the ingester rejects the record, or after three retries without an answer, the janitor marks it QUARANTINED and keeps it.';
+---
+
+<figure class="envelope-lifecycle not-content" data-envelope-lifecycle data-geometry={JSON.stringify(geometry)}>
+	<div class="cases" role="group" aria-label="Cases">
+		<button type="button" class="case" data-case="0" aria-pressed="true">It reaches the data lake</button>
+		<button type="button" class="case" data-case="1" aria-pressed="false">The ingester never answers</button>
+		<button type="button" class="case" data-case="2" aria-pressed="false">It breaks a rule</button>
+	</div>
+
+	<div class="layout">
+	<div class="stage">
+		{(['horizontal', 'vertical'] as const).map((layout) => {
+			const rail = layouts[layout].rail;
+			return (
+				<svg class={`map map-${layout}`} viewBox={layouts[layout].viewBox} role="img" aria-label={description}>
+					<g aria-hidden="true">
+						{routeNames.map((name) => (
+							<path class={`route route-${name}`} d={layouts[layout].routes[name]} />
+						))}
+						<circle class="spark" r="5">
+							<animateMotion dur="1.1s" repeatCount="indefinite" path={layouts[layout].routes.upper} />
+						</circle>
+						{stations.map((station) => {
+							const { x, y, width, height } = station.box[layout];
+							const lineHeight = layout === 'horizontal' ? 20 : 17;
+							return (
+								<g class={`station station-${station.id}`}>
+									<rect class="station-box" x={x} y={y} width={width} height={height} rx={layout === 'horizontal' ? 18 : 14} />
+									<text class="station-name" x={x + 18} y={y + (layout === 'horizontal' ? 34 : 26)}>{station.name}</text>
+									{station.roles.slice(0, layout === 'horizontal' ? undefined : 1).map((role, index) => (
+										<text class="station-role" x={x + 18} y={y + (layout === 'horizontal' ? 56 : 45) + index * lineHeight}>{role}</text>
+									))}
+								</g>
+							);
+						})}
+						{layouts[layout].chips.map((chip) => (
+							<g class={`chip chip-${chip.route}`}>
+								<rect class="chip-box" x={chip.x} y={chip.y} width={chip.width} height="28" rx="14" />
+								<text class:list={['chip-text', { 'chip-mono': chip.mono }]} x={chip.x + chip.width / 2} y={chip.y + 19} text-anchor="middle" data-chip-text={chip.dynamic}>{chip.text}</text>
+							</g>
+						))}
+						{rail.segments.map((segment) => (
+							<path class="rail" d={segment} />
+						))}
+						<path class="rail-progress" d={`M ${rail.ticks[0][0]} ${rail.y} L ${rail.ticks[0][0]} ${rail.y}`} />
+						{rail.ticks.map(([x, text]) => (
+							<>
+								<path class="tick" d={`M ${x} ${rail.y - 6} L ${x} ${rail.y + 6}`} />
+								<text class="tick-label" x={x} y={rail.y + 26} text-anchor="middle">{text}</text>
+							</>
+						))}
+						<text class="rail-label" x={rail.labelX} y={rail.y - 22}>TIME SINCE CAPTURE</text>
+						<circle class="clock-marker" cx="0" cy={rail.y} r="7" />
+						{layout === 'horizontal' && (
+							<>
+								<text class="rail-label" x="1220" y={rail.y - 22} text-anchor="end">NOW</text>
+								<text class="clock-readout" x="1220" y={rail.y + 10} text-anchor="end" />
+							</>
+						)}
+						<g class="token">
+							<rect class="token-box" width={layouts[layout].tokenWidth} height={layouts[layout].tokenHeight} rx="12" />
+							<g class="token-icon" transform={`translate(14 ${layouts[layout].tokenHeight / 2 - 8})`}>
+								<rect width="22" height="16" rx="2" />
+								<path d="M 0 1 L 11 9 L 22 1" />
+							</g>
+							<text class="token-name" x={layout === 'horizontal' ? 46 : 44} y={layouts[layout].tokenHeight / 2 + 5} />
+							{[0, 1, 2].map((index) => (
+								<circle class={`retry retry-${index + 1}`} cx={layouts[layout].tokenWidth - (layout === 'horizontal' ? 44 : 36) + index * (layout === 'horizontal' ? 13 : 10)} cy={layouts[layout].tokenHeight / 2} r={layout === 'horizontal' ? 4 : 3.5} />
+							))}
+						</g>
+					</g>
+				</svg>
+			);
+		})}
+	</div>
+
+	<div class="side">
+	<div class="narration">
+		<p class="caption" aria-live="polite"><span class="actor"></span> <span class="caption-text"></span></p>
+		<div class="controls">
+			<button type="button" class="control" data-action="previous">Previous step</button>
+			<button type="button" class="control control-primary" data-action="next">Next step</button>
+			<span class="progress"></span>
+		</div>
+	</div>
+
+	<div class="panels">
+		<section class="panel" aria-label="The envelope">
+			<p class="panel-title">The envelope of <span class="issue-name"></span></p>
+			<dl class="envelope">
+				<div><dt>Source</dt><dd>linear-issues</dd></div>
+				<div><dt>Idempotency key</dt><dd data-field="key"></dd></div>
+				<div><dt>State</dt><dd data-field="state"></dd></div>
+				<div><dt>Retries</dt><dd data-field="retries"></dd></div>
+				<div><dt>Last change</dt><dd data-field="change"></dd></div>
+			</dl>
+		</section>
+		<section class="panel" aria-label="What happened">
+			<p class="panel-title">What happened</p>
+			<ol class="log"></ol>
+		</section>
+		<section class="panel" aria-label="The janitor's defaults">
+			<p class="panel-title">The janitor's defaults</p>
+			<dl class="settings">
+				<div data-setting="milliseconds"><dt>milliseconds</dt><dd>5000</dd></div>
+				<div data-setting="millisecondsThreshold"><dt>millisecondsThreshold</dt><dd>180000</dd></div>
+				<div data-setting="millisecondsTTL"><dt>millisecondsTTL</dt><dd>86400000</dd></div>
+				<div data-setting="withMaxRetries"><dt>withMaxRetries</dt><dd>3</dd></div>
+			</dl>
+		</section>
+	</div>
+	</div>
+	</div>
+
+	<figcaption>
+		The three issues are made up to show each path. The real pipeline is in <a href={withBase('use-cases/assistant-knowledge-base/')}>Keep an assistant's knowledge base up to date</a>.
+	</figcaption>
+</figure>
+
+<script>
+	type Layout = 'horizontal' | 'vertical';
+	type StationId = 'captured' | 'persisted' | 'quarantined' | 'deleted';
+	type Route = 'loop' | 'upper' | 'lower' | 'ttl';
+	type Actor = 'crawler' | 'ingester' | 'janitor';
+	type Setting = 'milliseconds' | 'millisecondsThreshold' | 'millisecondsTTL' | 'withMaxRetries';
+
+	interface Step {
+		at: StationId;
+		state: string;
+		tick: number;
+		fraction?: number;
+		time: string;
+		actor: Actor;
+		caption: string;
+		log: string;
+		route?: Route;
+		lower?: string;
+		retries?: number;
+		settings?: Setting[];
+	}
+
+	interface Case {
+		issue: string;
+		key: string;
+		steps: Step[];
+	}
+
+	interface Geometry {
+		tokens: Record<StationId, [number, number]>;
+		routes: Record<Route, string>;
+		ticks: number[];
+	}
+
+	const cases: Case[] = [
+		{
+			issue: 'ENG-128',
+			key: '3fa91c0e…7d42',
+			steps: [
+				{ at: 'captured', state: 'CAPTURED', tick: 0, time: '0 s', actor: 'crawler', caption: 'The crawler reads issue ENG-128 from Linear and stores it in the inbox as a CAPTURED envelope.', log: 'stored the envelope as CAPTURED' },
+				{ at: 'captured', state: 'CAPTURED', tick: 0, fraction: 0.02, time: '0.8 s', actor: 'ingester', route: 'upper', caption: 'The ingester validates the record, writes it to the data lake and publishes EnvelopePersisted.', log: 'wrote it to the data lake' },
+				{ at: 'persisted', state: 'PERSISTED', tick: 0, fraction: 0.05, time: '5 s', actor: 'janitor', settings: ['milliseconds'], caption: 'On its next run, at most five seconds later, the janitor sees the event and marks the envelope PERSISTED.', log: 'marked it PERSISTED' },
+				{ at: 'deleted', state: 'deleted', tick: 5, time: '1 day', actor: 'janitor', route: 'ttl', settings: ['millisecondsTTL'], caption: 'A day later the TTL has passed, so the janitor deletes the envelope. The record stays in the data lake.', log: 'deleted it from the inbox' },
+			],
+		},
+		{
+			issue: 'ENG-131',
+			key: '81bd2e47…c09a',
+			steps: [
+				{ at: 'captured', state: 'CAPTURED', tick: 0, time: '0 s', actor: 'crawler', caption: 'The crawler stores issue ENG-131 in the inbox, but the ingester is stopped and nothing reads it.', log: 'stored the envelope as CAPTURED' },
+				{ at: 'captured', state: 'CAPTURED', tick: 1, time: '3 min', actor: 'janitor', route: 'loop', retries: 1, settings: ['millisecondsThreshold'], caption: 'After three minutes in CAPTURED, the janitor publishes the envelope again and counts one retry.', log: 'published it again, retry 1' },
+				{ at: 'captured', state: 'CAPTURED', tick: 2, time: '6 min', actor: 'janitor', route: 'loop', retries: 2, settings: ['millisecondsThreshold'], caption: 'Three minutes later there is still no answer, so the janitor publishes it again.', log: 'published it again, retry 2' },
+				{ at: 'captured', state: 'CAPTURED', tick: 3, time: '9 min', actor: 'janitor', route: 'loop', retries: 3, settings: ['millisecondsThreshold'], caption: 'The third retry is the last one the janitor makes by default.', log: 'published it again, retry 3' },
+				{ at: 'quarantined', state: 'QUARANTINED', tick: 4, time: '12 min', actor: 'janitor', route: 'lower', lower: 'after 3 retries', retries: 3, settings: ['withMaxRetries'], caption: 'With its three retries used, the janitor stops publishing the envelope and sets it to QUARANTINED.', log: 'set it to QUARANTINED' },
+			],
+		},
+		{
+			issue: 'ENG-140',
+			key: 'c4720f9b…e15d',
+			steps: [
+				{ at: 'captured', state: 'CAPTURED', tick: 0, time: '0 s', actor: 'crawler', caption: 'The crawler stores issue ENG-140 in the inbox as a CAPTURED envelope.', log: 'stored the envelope as CAPTURED' },
+				{ at: 'captured', state: 'CAPTURED', tick: 0, fraction: 0.02, time: '0.6 s', actor: 'ingester', route: 'lower', caption: 'The issue has no title, which one of your validation rules rejects, so the ingester leaves it out of the data lake and publishes EnvelopeQuarantined.', log: 'rejected it, the title is empty' },
+				{ at: 'quarantined', state: 'QUARANTINED', tick: 0, fraction: 0.05, time: '5 s', actor: 'janitor', settings: ['milliseconds'], caption: 'The janitor sees the event and sets the envelope to QUARANTINED. It is never deleted, so someone can review it.', log: 'set it to QUARANTINED' },
+			],
+		},
+	];
+
+	const visibleLogLines = 4;
+
+	function setup(root: HTMLElement) {
+		const geometry = JSON.parse(root.dataset.geometry ?? '{}') as Record<Layout, Geometry>;
+		const query = <T extends Element>(selector: string) => root.querySelector<T>(selector)!;
+		const caseButtons = [...root.querySelectorAll<HTMLButtonElement>('.case')];
+		const previous = query<HTMLButtonElement>('[data-action="previous"]');
+		const next = query<HTMLButtonElement>('[data-action="next"]');
+		const progress = query<HTMLElement>('.progress');
+		const actor = query<HTMLElement>('.actor');
+		const captionText = query<HTMLElement>('.caption-text');
+		const issueName = query<HTMLElement>('.issue-name');
+		const log = query<HTMLOListElement>('.log');
+		const maps = (['horizontal', 'vertical'] as const).map((layout) => ({ layout, svg: query<SVGSVGElement>(`.map-${layout}`) }));
+
+		let caseIndex = 0;
+		let stepIndex = 0;
+
+		function clockX(layout: Layout, step: Step) {
+			const ticks = geometry[layout].ticks;
+			const start = ticks[step.tick];
+			if (step.fraction === undefined) return start;
+			return start + (ticks[1] - ticks[0]) * step.fraction;
+		}
+
+		function render() {
+			const current = cases[caseIndex];
+			const step = current.steps[stepIndex];
+			const retries = step.retries ?? 0;
+			root.dataset.at = step.at;
+			root.dataset.route = step.route ?? '';
+			root.dataset.retries = String(retries);
+			root.dataset.state = step.state;
+
+			for (const { layout, svg } of maps) {
+				const [x, y] = geometry[layout].tokens[step.at];
+				svg.querySelector<SVGGElement>('.token')!.style.transform = `translate(${x}px, ${y}px)`;
+				svg.querySelector<SVGTextElement>('.token-name')!.textContent = current.issue;
+				const markerX = clockX(layout, step);
+				const marker = svg.querySelector<SVGCircleElement>('.clock-marker')!;
+				marker.style.transform = `translateX(${markerX}px)`;
+				const progressPath = svg.querySelector<SVGPathElement>('.rail-progress')!;
+				const [firstTick] = geometry[layout].ticks;
+				const railY = marker.cy.baseVal.value;
+				progressPath.setAttribute('d', `M ${firstTick} ${railY} L ${Math.min(markerX, firstTick + 700)} ${railY}`);
+				const motion = svg.querySelector<SVGAnimateMotionElement>('.spark animateMotion')!;
+				if (step.route) {
+					motion.setAttribute('path', geometry[layout].routes[step.route]);
+					motion.beginElement();
+				}
+				const loopChip = svg.querySelector<SVGTextElement>('[data-chip-text="loop"]');
+				if (loopChip) loopChip.textContent = retries > 0 ? `published again, ${retries} of 3` : 'published again';
+				const lowerChip = svg.querySelector<SVGTextElement>('[data-chip-text="lower"]');
+				if (lowerChip) lowerChip.textContent = step.lower ?? 'EnvelopeQuarantined';
+				const readout = svg.querySelector<SVGTextElement>('.clock-readout');
+				if (readout) readout.textContent = step.time === '0 s' ? 'just captured' : `${step.time} later`;
+			}
+
+			actor.textContent = step.actor;
+			actor.dataset.actor = step.actor;
+			captionText.textContent = step.caption;
+			issueName.textContent = current.issue;
+			const fields: Record<string, string> = {
+				key: current.key,
+				state: step.state === 'deleted' ? 'deleted from the inbox' : step.state,
+				retries: String(retries),
+				change: step.time === '0 s' ? 'at capture' : `${step.time} after capture`,
+			};
+			root.querySelectorAll<HTMLElement>('[data-field]').forEach((field) => {
+				field.textContent = fields[field.dataset.field ?? ''] ?? '';
+			});
+			root.querySelectorAll<HTMLElement>('[data-setting]').forEach((setting) => {
+				setting.classList.toggle('is-in-play', step.settings?.includes(setting.dataset.setting as Setting) ?? false);
+			});
+			log.replaceChildren(
+				...current.steps
+					.slice(0, stepIndex + 1)
+					.reverse()
+					.slice(0, visibleLogLines)
+					.map((item, index) => {
+						const line = document.createElement('li');
+						line.classList.toggle('is-new', index === 0);
+						const time = document.createElement('span');
+						time.className = 'log-time';
+						time.textContent = item.time;
+						const who = document.createElement('span');
+						who.className = 'log-actor';
+						who.dataset.actor = item.actor;
+						who.textContent = item.actor;
+						const what = document.createElement('span');
+						what.className = 'log-text';
+						what.textContent = item.log;
+						line.append(time, who, what);
+						return line;
+					}),
+			);
+			caseButtons.forEach((button, index) => button.setAttribute('aria-pressed', String(index === caseIndex)));
+			progress.textContent = `Step ${stepIndex + 1} of ${current.steps.length}`;
+			previous.disabled = stepIndex === 0;
+			next.textContent = stepIndex === current.steps.length - 1 ? 'Next case' : 'Next step';
+		}
+
+		caseButtons.forEach((button, index) =>
+			button.addEventListener('click', () => {
+				caseIndex = index;
+				stepIndex = 0;
+				render();
+			}),
+		);
+		previous.addEventListener('click', () => {
+			stepIndex = Math.max(0, stepIndex - 1);
+			render();
+		});
+		next.addEventListener('click', () => {
+			if (stepIndex < cases[caseIndex].steps.length - 1) {
+				stepIndex += 1;
+			} else {
+				caseIndex = (caseIndex + 1) % cases.length;
+				stepIndex = 0;
+			}
+			render();
+		});
+
+		render();
+		requestAnimationFrame(() => root.classList.add('is-ready'));
+	}
+
+	document.querySelectorAll<HTMLElement>('[data-envelope-lifecycle]').forEach(setup);
+</script>
+
+<style>
+	.envelope-lifecycle {
+		--lifecycle-ink: #0d1220;
+		--lifecycle-panel: #161c2e;
+		--lifecycle-station: #111727;
+		--lifecycle-border: #232b42;
+		--lifecycle-rule: #1f2740;
+		--lifecycle-idle: #2a3350;
+		--lifecycle-text: #e8ecf6;
+		--lifecycle-muted: #b8c0d4;
+		--lifecycle-faint: #8790a8;
+		--lifecycle-captured: #7b96ff;
+		--lifecycle-captured-light: #9db1ff;
+		--lifecycle-persisted: #c3ceee;
+		--lifecycle-quarantined: #f2c14e;
+		--lifecycle-deleted: #6b7593;
+
+		container-type: inline-size;
+		margin: 2rem 0;
+		padding: clamp(1rem, 3cqi, 2.5rem);
+		border: 1px solid var(--lifecycle-border);
+		border-radius: 1rem;
+		background: var(--lifecycle-ink);
+		color: var(--lifecycle-text);
+		font-family: var(--__sl-font);
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+		gap: 1.5rem;
+	}
+
+	.cases {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem 0.75rem;
+	}
+
+	.case,
+	.control {
+		min-height: 2.75rem;
+		padding: 0 1.25rem;
+		border: 1px solid #2f3a5c;
+		border-radius: 999px;
+		background: var(--lifecycle-panel);
+		color: var(--lifecycle-text);
+		font: inherit;
+		font-size: 0.9375rem;
+		font-weight: 600;
+		cursor: pointer;
+	}
+
+	.case[aria-pressed='true'],
+	.control-primary {
+		border-color: var(--lifecycle-captured-light);
+		background: var(--lifecycle-captured-light);
+		color: var(--lifecycle-ink);
+	}
+
+	.case:hover,
+	.control:hover:not(:disabled) {
+		border-color: var(--lifecycle-captured-light);
+	}
+
+	.case:focus-visible,
+	.control:focus-visible {
+		outline: 2px solid var(--lifecycle-captured-light);
+		outline-offset: 2px;
+	}
+
+	.control:disabled {
+		opacity: 0.45;
+		cursor: default;
+	}
+
+	.map {
+		display: block;
+		width: 100%;
+		height: auto;
+		overflow: visible;
+	}
+
+	.map-vertical {
+		max-width: 24rem;
+		margin-inline: auto;
+	}
+
+	.layout,
+	.side {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+		gap: 1.5rem;
+	}
+
+	@container (min-width: 960px) {
+		.map-vertical {
+			display: none;
+		}
+		.panels {
+			grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr) minmax(0, 0.95fr);
+		}
+	}
+
+	@container (max-width: 959.98px) {
+		.map-horizontal {
+			display: none;
+		}
+	}
+
+	@container (min-width: 600px) and (max-width: 959.98px) {
+		.layout {
+			grid-template-columns: minmax(0, 18rem) minmax(0, 1fr);
+			align-items: start;
+		}
+		.caption {
+			flex-basis: 100%;
+		}
+	}
+
+	.route {
+		fill: none;
+		stroke: var(--lifecycle-idle);
+		stroke-width: 1.5;
+		transition: stroke 0.35s ease, stroke-width 0.35s ease;
+	}
+
+	.route-loop,
+	.route-ttl {
+		stroke-dasharray: 6 6;
+	}
+
+	[data-route='upper'] .route-upper {
+		stroke: var(--lifecycle-captured);
+		stroke-width: 2.5;
+	}
+
+	[data-route='lower'] .route-lower,
+	[data-route='loop'] .route-loop {
+		stroke: var(--lifecycle-quarantined);
+		stroke-width: 2.5;
+	}
+
+	[data-route='ttl'] .route-ttl {
+		stroke: var(--lifecycle-persisted);
+		stroke-width: 2.5;
+	}
+
+	.spark {
+		display: none;
+		fill: var(--lifecycle-captured-light);
+	}
+
+	[data-route='upper'] .spark,
+	[data-route='lower'] .spark,
+	[data-route='loop'] .spark,
+	[data-route='ttl'] .spark {
+		display: inline;
+	}
+
+	[data-route='lower'] .spark,
+	[data-route='loop'] .spark {
+		fill: var(--lifecycle-quarantined);
+	}
+
+	[data-route='ttl'] .spark {
+		fill: var(--lifecycle-persisted);
+	}
+
+	.station-box {
+		fill: var(--lifecycle-station);
+		stroke: var(--lifecycle-border);
+		stroke-width: 1.5;
+		transition: stroke 0.35s ease, fill 0.35s ease;
+	}
+
+	.station-deleted .station-box {
+		stroke-dasharray: 6 5;
+	}
+
+	[data-at='captured'] .station-captured .station-box {
+		stroke: var(--lifecycle-captured);
+		fill: #141c33;
+	}
+
+	[data-at='persisted'] .station-persisted .station-box {
+		stroke: var(--lifecycle-persisted);
+		fill: #171e31;
+	}
+
+	[data-at='quarantined'] .station-quarantined .station-box {
+		stroke: var(--lifecycle-quarantined);
+		fill: #1d1b1c;
+	}
+
+	[data-at='deleted'] .station-deleted .station-box {
+		stroke: var(--lifecycle-deleted);
+	}
+
+	.station-name {
+		font-family: var(--__sl-font-mono);
+		font-size: 16px;
+		font-weight: 500;
+		fill: var(--lifecycle-captured-light);
+	}
+
+	.station-persisted .station-name {
+		fill: var(--lifecycle-persisted);
+	}
+
+	.station-quarantined .station-name {
+		fill: var(--lifecycle-quarantined);
+	}
+
+	.station-deleted .station-name {
+		fill: var(--lifecycle-faint);
+	}
+
+	.station-role {
+		font-size: 14px;
+		fill: var(--lifecycle-muted);
+	}
+
+	.map-vertical .station-name {
+		font-size: 14px;
+	}
+
+	.map-vertical .station-role {
+		font-size: 12px;
+	}
+
+	.map-vertical .token-name {
+		font-size: 13px;
+	}
+
+	.chip-box {
+		fill: var(--lifecycle-ink);
+		stroke: var(--lifecycle-border);
+		transition: stroke 0.35s ease;
+	}
+
+	.chip-text {
+		font-size: 13px;
+		font-weight: 600;
+		fill: #5b6580;
+		transition: fill 0.35s ease;
+	}
+
+	.chip-mono {
+		font-family: var(--__sl-font-mono);
+		font-weight: 500;
+	}
+
+	[data-route='upper'] .chip-upper .chip-box {
+		stroke: var(--lifecycle-captured);
+	}
+
+	[data-route='upper'] .chip-upper .chip-text {
+		fill: var(--lifecycle-captured-light);
+	}
+
+	[data-route='lower'] .chip-lower .chip-box,
+	[data-route='loop'] .chip-loop .chip-box {
+		stroke: var(--lifecycle-quarantined);
+	}
+
+	[data-route='lower'] .chip-lower .chip-text,
+	[data-route='loop'] .chip-loop .chip-text {
+		fill: var(--lifecycle-quarantined);
+	}
+
+	[data-route='ttl'] .chip-ttl .chip-box {
+		stroke: var(--lifecycle-persisted);
+	}
+
+	[data-route='ttl'] .chip-ttl .chip-text {
+		fill: var(--lifecycle-persisted);
+	}
+
+	.rail,
+	.tick {
+		fill: none;
+		stroke: var(--lifecycle-idle);
+		stroke-width: 2;
+	}
+
+	.tick {
+		stroke: #5b6580;
+		stroke-width: 1.5;
+	}
+
+	.rail-progress {
+		fill: none;
+		stroke: var(--lifecycle-captured);
+		stroke-width: 2;
+	}
+
+	.tick-label {
+		font-size: 13px;
+		fill: var(--lifecycle-faint);
+	}
+
+	.rail-label {
+		font-size: 12px;
+		font-weight: 600;
+		letter-spacing: 0.06em;
+		fill: var(--lifecycle-faint);
+	}
+
+	.clock-readout {
+		font-family: var(--spool-font-display, var(--__sl-font));
+		font-size: 28px;
+		font-weight: 600;
+		fill: #ffffff;
+	}
+
+	.clock-marker {
+		fill: var(--lifecycle-ink);
+		stroke: var(--lifecycle-captured);
+		stroke-width: 2;
+	}
+
+	.token-box {
+		fill: var(--lifecycle-panel);
+		stroke: var(--lifecycle-captured);
+		stroke-width: 1.5;
+		transition: stroke 0.35s ease;
+	}
+
+	.token-icon {
+		fill: none;
+		stroke: var(--lifecycle-captured);
+		stroke-width: 1.5;
+		stroke-linejoin: round;
+		transition: stroke 0.35s ease;
+	}
+
+	[data-state='PERSISTED'] .token-box,
+	[data-state='PERSISTED'] .token-icon {
+		stroke: var(--lifecycle-persisted);
+	}
+
+	[data-state='QUARANTINED'] .token-box,
+	[data-state='QUARANTINED'] .token-icon {
+		stroke: var(--lifecycle-quarantined);
+	}
+
+	[data-state='deleted'] .token-box,
+	[data-state='deleted'] .token-icon {
+		stroke: var(--lifecycle-deleted);
+	}
+
+	[data-state='deleted'] .token {
+		opacity: 0.45;
+	}
+
+	.token-name {
+		font-family: var(--__sl-font-mono);
+		font-size: 15px;
+		font-weight: 500;
+		fill: #ffffff;
+	}
+
+	.retry {
+		fill: transparent;
+		stroke: var(--lifecycle-quarantined);
+		stroke-width: 1.5;
+		transition: fill 0.35s ease;
+	}
+
+	[data-retries='1'] .retry-1,
+	[data-retries='2'] :is(.retry-1, .retry-2),
+	[data-retries='3'] :is(.retry-1, .retry-2, .retry-3) {
+		fill: var(--lifecycle-quarantined);
+	}
+
+	.is-ready .token,
+	.is-ready .clock-marker {
+		transition: transform 0.9s cubic-bezier(0.65, 0, 0.35, 1), opacity 0.6s ease;
+	}
+
+	.narration {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.75rem 1.5rem;
+	}
+
+	.caption {
+		flex: 1 1 24rem;
+		margin: 0;
+		min-height: 3.2em;
+		font-size: 1.125rem;
+		line-height: 1.6;
+		font-weight: 500;
+	}
+
+	.actor {
+		display: inline-block;
+		margin-inline-end: 0.5rem;
+		padding: 0 0.6rem;
+		border-radius: 999px;
+		background: var(--lifecycle-quarantined);
+		color: var(--lifecycle-ink);
+		font-family: var(--__sl-font-mono);
+		font-size: 0.8125rem;
+		line-height: 1.6rem;
+		vertical-align: 0.1em;
+	}
+
+	.actor[data-actor='crawler'] {
+		background: var(--lifecycle-captured-light);
+	}
+
+	.actor[data-actor='ingester'] {
+		background: var(--lifecycle-persisted);
+	}
+
+	.controls {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.5rem 0.75rem;
+	}
+
+	.progress {
+		color: var(--lifecycle-muted);
+		font-size: 0.875rem;
+	}
+
+	.panels {
+		display: grid;
+		gap: 1rem;
+	}
+
+	.panel {
+		min-width: 0;
+		padding: 1.25rem 1.5rem;
+		border: 1px solid var(--lifecycle-border);
+		border-radius: 0.875rem;
+		background: var(--lifecycle-panel);
+	}
+
+	.panel-title {
+		margin: 0 0 0.75rem;
+		color: var(--lifecycle-faint);
+		font-size: 0.8125rem;
+		font-weight: 600;
+		letter-spacing: 0.05em;
+		text-transform: uppercase;
+	}
+
+	.envelope,
+	.settings {
+		margin: 0;
+	}
+
+	.envelope div,
+	.settings div {
+		display: flex;
+		justify-content: space-between;
+		gap: 1rem;
+		padding-block: 0.3rem;
+		border-top: 1px solid var(--lifecycle-rule);
+		font-size: 0.875rem;
+	}
+
+	.envelope dt {
+		color: var(--lifecycle-muted);
+	}
+
+	.envelope dd,
+	.settings dd {
+		margin: 0;
+		font-family: var(--__sl-font-mono);
+		font-size: 0.8125rem;
+		font-weight: 500;
+		text-align: end;
+		overflow-wrap: anywhere;
+	}
+
+	[data-state='CAPTURED'] [data-field='state'] {
+		color: var(--lifecycle-captured-light);
+	}
+
+	[data-state='PERSISTED'] [data-field='state'] {
+		color: var(--lifecycle-persisted);
+	}
+
+	[data-state='QUARANTINED'] [data-field='state'] {
+		color: var(--lifecycle-quarantined);
+	}
+
+	[data-state='deleted'] [data-field='state'] {
+		color: var(--lifecycle-faint);
+	}
+
+	:is([data-retries='1'], [data-retries='2'], [data-retries='3']) [data-field='retries'] {
+		color: var(--lifecycle-quarantined);
+	}
+
+	.settings div {
+		margin-inline: -0.6rem;
+		padding-inline: 0.6rem;
+		border-radius: 0.5rem;
+		font-family: var(--__sl-font-mono);
+		font-size: 0.8125rem;
+		transition: background-color 0.35s ease;
+	}
+
+	.settings dt {
+		color: var(--lifecycle-muted);
+	}
+
+	.settings div.is-in-play {
+		background: rgba(123, 150, 255, 0.16);
+	}
+
+	.settings div.is-in-play dt {
+		color: var(--lifecycle-captured-light);
+	}
+
+	.log {
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.log :global(li) {
+		display: grid;
+		grid-template-columns: 3.5rem 4.5rem minmax(0, 1fr);
+		gap: 0.75rem;
+		padding-block: 0.4rem;
+		border-top: 1px solid var(--lifecycle-rule);
+		font-size: 0.875rem;
+	}
+
+	.log :global(li.is-new) {
+		animation: log-arrive 0.4s ease-out;
+	}
+
+	.log :global(.log-time) {
+		color: var(--lifecycle-faint);
+		font-family: var(--__sl-font-mono);
+		font-size: 0.8125rem;
+	}
+
+	.log :global(.log-actor) {
+		font-family: var(--__sl-font-mono);
+		font-size: 0.8125rem;
+		color: var(--lifecycle-quarantined);
+	}
+
+	.log :global(.log-actor[data-actor='crawler']) {
+		color: var(--lifecycle-captured-light);
+	}
+
+	.log :global(.log-actor[data-actor='ingester']) {
+		color: var(--lifecycle-persisted);
+	}
+
+	.log :global(.log-text) {
+		color: var(--lifecycle-persisted);
+	}
+
+	figcaption {
+		color: var(--lifecycle-muted);
+		font-size: 0.875rem;
+	}
+
+	figcaption a {
+		color: var(--lifecycle-captured-light);
+	}
+
+	@keyframes log-arrive {
+		from {
+			opacity: 0;
+			transform: translateY(6px);
+		}
+		to {
+			opacity: 1;
+			transform: none;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.spark {
+			visibility: hidden;
+		}
+		.is-ready .token,
+		.is-ready .clock-marker,
+		.route,
+		.station-box,
+		.chip-box,
+		.chip-text,
+		.token-box,
+		.token-icon,
+		.retry,
+		.settings div {
+			transition: none;
+		}
+		.log :global(li) {
+			animation: none;
+		}
+	}
+</style>
