@@ -1,5 +1,6 @@
 export const site = {
 	name: 'Spool',
+	headline: 'Build data pipelines you can trace.',
 	author: 'Javier Castilla',
 	origin: 'final-year project in Computer Engineering at the University of Las Palmas de Gran Canaria',
 	license: {
@@ -31,6 +32,17 @@ export const site = {
 		],
 	},
 };
+
+export const docsSections = [
+	{ label: 'Getting started', directory: 'getting-started' },
+	{ label: 'Concepts', directory: 'concepts' },
+	{ label: 'Modules', directory: 'modules' },
+	{ label: 'DSL reference', directory: 'dsl' },
+	{ label: 'Ports and backends', directory: 'ports' },
+	{ label: 'Operations', directory: 'operations' },
+	{ label: 'Examples', directory: 'examples' },
+	{ label: 'Use cases', directory: 'use-cases' },
+];
 
 export const cliInstallScripts = {
 	unix: 'install.sh',
