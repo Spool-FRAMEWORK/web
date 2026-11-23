@@ -96,12 +96,6 @@ header.header {
 	stroke: currentColor;
 	stroke-width: 1;
 }
-.spool-diagram .external {
-	fill: none;
-	stroke: currentColor;
-	stroke-width: 1.5;
-	stroke-dasharray: 5 4;
-}
 .spool-diagram .process {
 	fill: none;
 	stroke: var(--sl-color-gray-4);
@@ -149,10 +143,6 @@ header.header {
 .spool-diagram .title {
 	font-size: 17px;
 	font-weight: 700;
-}
-.spool-diagram .event-label {
-	fill: var(--sl-color-text-accent);
-	font-size: 14.5px;
 }
 .spool-diagram .boundary {
 	fill: none;
