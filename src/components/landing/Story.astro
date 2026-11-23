@@ -1,13 +1,22 @@
 ---
 import StopDetails from './StopDetails.astro';
+import GrowthAct from './GrowthAct.astro';
+import { chapterCamera, chapters } from './growth';
 import { route, stops } from './story';
 
 const illustrations = import.meta.glob<string>('./illustrations/*.svg', { query: '?raw', import: 'default', eager: true });
 const illustration = (name: string) => illustrations[`./illustrations/${name}.svg`];
 const quarantineIllustration = illustration('quarantine');
 
+const lastStop = stops[stops.length - 1];
+const totalStops = stops.length + chapters.length;
+const scrollPerStop = 55;
 const storyConfiguration = {
-	stops: stops.map(({ camera, recordDistance, traceDistance }) => ({ camera, recordDistance, traceDistance })),
+	stops: [
+		...stops.map(({ camera, recordDistance, traceDistance }) => ({ camera, recordDistance, traceDistance })),
+		...chapters.map((chapter) => ({ camera: chapterCamera(chapter), recordDistance: lastStop.recordDistance, traceDistance: lastStop.traceDistance })),
+	],
+	actStart: stops.length,
 	quarantineStop: route.quarantineStop,
 	traceVisibleFrom: route.traceVisibleFrom,
 	traceVisibleUntil: route.traceVisibleUntil,
@@ -21,14 +30,15 @@ const stopNumber = (index: number) => `${String(index + 1).padStart(2, '0')} / $
 		<span class="rail" aria-hidden="true"></span>
 		<span class="eyebrow"><span class="knot" aria-hidden="true"></span>How it works</span>
 		<h2 class="section-title">Follow a record through Spool.</h2>
-		<p class="intro-text">One issue from Linear, from the moment it is read to the moment an assistant answers with it. Each scroll moves it one stop further.</p>
+		<p class="intro-text">One issue from Linear, from the moment it is read to the moment an assistant answers with it. Each scroll moves it one stop further, and then the same pipeline keeps growing for nine months.</p>
 		<div class="legend">
 			<span><span class="legend-record" aria-hidden="true"></span>the record, event by event on the bus</span>
 			<span><span class="legend-trace" aria-hidden="true"></span>its OpenTelemetry trace, alongside it and on to your backend</span>
 		</div>
 	</section>
 
-	<div class="track desktop-only" data-story data-configuration={JSON.stringify(storyConfiguration)} style={`--stop-count: ${stops.length}`}>
+	<div class="track desktop-only" data-story data-configuration={JSON.stringify(storyConfiguration)} style={`--stop-count: ${totalStops}; --scroll-per-stop: ${scrollPerStop}vh`}>
+		<span id="grows" class="act-anchor" style={`top: calc((var(--stop-count) - 1) * var(--scroll-per-stop) * ${((stops.length + 0.3) / totalStops).toFixed(4)})`}></span>
 		<div class="stage" data-stage>
 			<div class="viewport" aria-hidden="true">
 				<div class="world" data-world style={`width: ${route.worldWidth}px; height: ${route.worldHeight}px`}>
@@ -41,7 +51,7 @@ const stopNumber = (index: number) => `${String(index + 1).padStart(2, '0')} / $
 								<path data-trace-mask d={route.trace} fill="none" stroke="#FFFFFF" stroke-width="14" stroke-linecap="round"></path>
 							</mask>
 						</defs>
-						<rect x="-1600" y="-1600" width="8200" height="4100" fill="url(#story-grid)"></rect>
+						<rect x="-1600" y="-1600" width="11000" height="4100" fill="url(#story-grid)"></rect>
 						<path d={route.record} fill="none" stroke="#DDE1EA" stroke-width="5" stroke-linecap="round"></path>
 						<path d={route.trace} fill="none" stroke="#D3DBF3" stroke-width="3" stroke-dasharray="2 10" stroke-linecap="round"></path>
 						<path d={route.quarantine} fill="none" stroke="#F2C14E" stroke-width="4" stroke-dasharray="10 10" stroke-linecap="round"></path>
@@ -67,6 +77,7 @@ const stopNumber = (index: number) => `${String(index + 1).padStart(2, '0')} / $
 					<div class="record-dot" data-record-dot style={`offset-path: path('${route.record}')`}></div>
 					<div class="trace-dot" data-trace-dot style={`offset-path: path('${route.trace}')`}></div>
 					<div class="record-dot" data-answer-dot style={`offset-path: path('${route.answer}')`}></div>
+					<GrowthAct />
 				</div>
 			</div>
 
@@ -78,11 +89,25 @@ const stopNumber = (index: number) => `${String(index + 1).padStart(2, '0')} / $
 						<StopDetails stop={stop} />
 					</div>
 				))}
+				{chapters.map((chapter, index) => (
+					<div class="caption" data-caption={stops.length + index}>
+						<span class="caption-number">{index === 0 ? `Nine months later\n${chapter.when}` : chapter.when}</span>
+						<h3>{chapter.event}</h3>
+						<p class="chapter-text">{chapter.answer}</p>
+						<figure class="chapter-code">
+							<figcaption><span>{chapter.file}</span><span>{chapter.fileNote}</span></figcaption>
+							<pre><code>{chapter.code.map((line, lineIndex) => <span class:list={['code-line', { 'is-added': chapter.added.includes(lineIndex) }]}>{line || ' '}</span>)}</code></pre>
+						</figure>
+					</div>
+				))}
 			</div>
 
 			<nav class="stop-buttons" aria-label="Stops">
 				{stops.map((stop, index) => (
 					<button type="button" data-go-to={index} aria-label={`Stop ${index + 1} of ${stops.length}, ${stop.title}`}></button>
+				))}
+				{chapters.map((chapter, index) => (
+					<button type="button" class:list={[{ 'act-start': index === 0 }]} data-go-to={stops.length + index} aria-label={`Nine months later, chapter ${index + 1} of ${chapters.length}, ${chapter.title}`}></button>
 				))}
 			</nav>
 			<span class="hint" data-hint>Scroll for the next stop</span>
@@ -99,6 +124,18 @@ const stopNumber = (index: number) => `${String(index + 1).padStart(2, '0')} / $
 				<StopDetails stop={stop} />
 			</li>
 		))}
+		{chapters.map((chapter, index) => (
+			<li>
+				<span class="mobile-node" aria-hidden="true"></span>
+				<span class="caption-number">{index === 0 ? `Nine months later\n${chapter.when}` : chapter.when}</span>
+				<h3>{chapter.event}</h3>
+				<p class="chapter-text">{chapter.answer}</p>
+				<figure class="chapter-code">
+					<figcaption><span>{chapter.file}</span><span>{chapter.fileNote}</span></figcaption>
+					<pre><code>{chapter.code.map((line, lineIndex) => <span class:list={['code-line', { 'is-added': chapter.added.includes(lineIndex) }]}>{line || ' '}</span>)}</code></pre>
+				</figure>
+			</li>
+		))}
 	</ol>
 </div>
 
@@ -111,6 +148,7 @@ const stopNumber = (index: number) => `${String(index + 1).padStart(2, '0')} / $
 
 	interface StoryConfiguration {
 		stops: StopConfiguration[];
+		actStart: number;
 		quarantineStop: number;
 		traceVisibleFrom: number;
 		traceVisibleUntil: number;
@@ -133,6 +171,7 @@ const stopNumber = (index: number) => `${String(index + 1).padStart(2, '0')} / $
 		const traceDot = track.querySelector<HTMLElement>('[data-trace-dot]')!;
 		const answerDot = track.querySelector<HTMLElement>('[data-answer-dot]')!;
 		const hint = track.querySelector<HTMLElement>('[data-hint]')!;
+		const growthAct = track.querySelector<HTMLElement>('[data-growth-act]');
 		const buttons = [...track.querySelectorAll<HTMLButtonElement>('[data-go-to]')];
 		const lastStop = configuration.stops.length - 1;
 		const recordLength = recordPath.getTotalLength();
@@ -163,10 +202,15 @@ const stopNumber = (index: number) => `${String(index + 1).padStart(2, '0')} / $
 			traceDot.style.offsetDistance = `${Math.min(100, (stop.traceDistance / traceLength) * 100).toFixed(3)}%`;
 			traceDot.classList.toggle('is-visible', index >= configuration.traceVisibleFrom && index <= configuration.traceVisibleUntil);
 			const answering = index === configuration.answerStop;
-			answerPath.style.strokeDashoffset = String(answering ? 0 : answerLength);
-			answerDot.style.offsetDistance = answering ? '100%' : '0%';
+			const answered = index >= configuration.answerStop;
+			answerPath.style.strokeDashoffset = String(answered ? 0 : answerLength);
+			answerDot.style.offsetDistance = answered ? '100%' : '0%';
 			answerDot.classList.toggle('is-visible', answering);
-			recordDot.classList.toggle('is-visible', !answering);
+			recordDot.classList.toggle('is-visible', !answered);
+			track.classList.toggle('in-act-two', index >= configuration.actStart);
+			if (growthAct && index >= configuration.actStart) {
+				growthAct.dispatchEvent(new CustomEvent('growth:chapter', { detail: index - configuration.actStart }));
+			}
 			track.querySelectorAll<HTMLElement>('[data-station]').forEach((element) => element.classList.toggle('is-on', Number(element.dataset.station) <= index));
 			track.querySelectorAll<HTMLElement>('[data-quarantine]').forEach((element) => element.classList.toggle('is-on', index >= configuration.quarantineStop));
 			track.querySelectorAll<HTMLElement>('[data-caption]').forEach((caption) => caption.classList.toggle('is-current', Number(caption.dataset.caption) === index));
@@ -263,7 +307,7 @@ const stopNumber = (index: number) => `${String(index + 1).padStart(2, '0')} / $
 
 	.track {
 		position: relative;
-		height: calc(var(--stage-height) + (var(--stop-count) - 1) * 70vh);
+		height: calc(var(--stage-height) + (var(--stop-count) - 1) * var(--scroll-per-stop));
 		--stage-height: clamp(560px, calc(100vh - var(--landing-header-height)), 860px);
 	}
 
@@ -420,12 +464,82 @@ const stopNumber = (index: number) => `${String(index + 1).padStart(2, '0')} / $
 		transition: offset-distance 1000ms cubic-bezier(0.65, 0, 0.35, 1), opacity 400ms ease;
 	}
 
+	.track.in-act-two :is(.station, .node, .station-label, .record-dot, .trace-dot, .routes > path) {
+		opacity: 0.12;
+		transition: opacity 0.8s ease;
+	}
+
+	.act-anchor {
+		position: absolute;
+		left: 0;
+		scroll-margin-top: var(--landing-header-height);
+	}
+
+	.stop-buttons button.act-start {
+		margin-top: 14px;
+	}
+
+	.chapter-text {
+		margin: 0;
+		font-size: 15px;
+		line-height: 1.55;
+		color: var(--landing-muted);
+	}
+
+	.chapter-code {
+		min-width: 0;
+		max-width: 100%;
+		margin: 4px 0 0;
+		padding: 12px 14px;
+		border-radius: 12px;
+		background: var(--landing-ink);
+		overflow: hidden;
+	}
+
+	.chapter-code figcaption {
+		display: flex;
+		justify-content: space-between;
+		gap: 12px;
+		margin-bottom: 8px;
+		font-family: var(--landing-mono);
+		font-size: 11px;
+		color: var(--landing-on-ink-faint);
+	}
+
+	.chapter-code pre {
+		margin: 0;
+		overflow-x: auto;
+	}
+
+	.chapter-code code {
+		display: block;
+		min-width: max-content;
+		font-family: var(--landing-mono);
+		font-size: 12px;
+		line-height: 1.6;
+		color: var(--landing-on-ink-muted);
+	}
+
+	.code-line {
+		display: block;
+		margin-inline: -6px;
+		padding-inline: 6px;
+		border-radius: 4px;
+		white-space: pre;
+	}
+
+	.code-line.is-added {
+		background: rgba(123, 150, 255, 0.18);
+		color: #ffffff;
+	}
+
 	.captions {
 		position: absolute;
 		left: 32px;
 		bottom: 32px;
 		width: 400px;
 		display: grid;
+		grid-template-columns: minmax(0, 1fr);
 		border-radius: 20px;
 		background: rgba(255, 255, 255, 0.94);
 		border: 1px solid var(--landing-border);
@@ -433,6 +547,7 @@ const stopNumber = (index: number) => `${String(index + 1).padStart(2, '0')} / $
 	}
 
 	.caption {
+		min-width: 0;
 		display: none;
 		flex-direction: column;
 		gap: 10px;
