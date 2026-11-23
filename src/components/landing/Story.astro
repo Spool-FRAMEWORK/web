@@ -96,7 +96,7 @@ const stopNumber = (index: number) => `${String(index + 1).padStart(2, '0')} / $
 						<p class="chapter-text">{chapter.answer}</p>
 						<figure class="chapter-code">
 							<figcaption><span>{chapter.file}</span><span>{chapter.fileNote}</span></figcaption>
-							<pre><code>{chapter.code.map((line, lineIndex) => <span class:list={['code-line', { 'is-added': chapter.added.includes(lineIndex) }]}>{line || ' '}</span>)}</code></pre>
+							<pre class="dark-scroll"><code>{chapter.code.map((line, lineIndex) => <span class:list={['code-line', { 'is-added': chapter.added.includes(lineIndex) }]}>{line || ' '}</span>)}</code></pre>
 						</figure>
 					</div>
 				))}
@@ -132,7 +132,7 @@ const stopNumber = (index: number) => `${String(index + 1).padStart(2, '0')} / $
 				<p class="chapter-text">{chapter.answer}</p>
 				<figure class="chapter-code">
 					<figcaption><span>{chapter.file}</span><span>{chapter.fileNote}</span></figcaption>
-					<pre><code>{chapter.code.map((line, lineIndex) => <span class:list={['code-line', { 'is-added': chapter.added.includes(lineIndex) }]}>{line || ' '}</span>)}</code></pre>
+					<pre class="dark-scroll"><code>{chapter.code.map((line, lineIndex) => <span class:list={['code-line', { 'is-added': chapter.added.includes(lineIndex) }]}>{line || ' '}</span>)}</code></pre>
 				</figure>
 			</li>
 		))}

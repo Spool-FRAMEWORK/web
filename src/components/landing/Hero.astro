@@ -148,9 +148,15 @@ const commands = {
 	.command code {
 		min-width: 0;
 		overflow-x: auto;
+		scrollbar-width: none;
+		mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
 		white-space: nowrap;
 		font-size: 14px;
 		color: var(--landing-ink);
+	}
+
+	.command code::-webkit-scrollbar {
+		display: none;
 	}
 
 	.prompt {

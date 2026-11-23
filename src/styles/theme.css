@@ -12,6 +12,7 @@
 	--spool-gold: #a87b06;
 	--spool-gold-fill: #f8edc6;
 	--spool-surface: #ffffff;
+	--spool-scrollbar: rgba(195, 206, 238, 0.35);
 
 	--sl-color-accent-low: #1a2238;
 	--sl-color-accent: #7b96ff;
@@ -19,6 +20,7 @@
 }
 
 :root[data-theme='light'] {
+	--spool-scrollbar: rgba(13, 18, 32, 0.22);
 	--sl-color-accent-low: #e3e8f5;
 	--sl-color-accent: #1f45c8;
 	--sl-color-accent-high: #16349a;
@@ -227,4 +229,28 @@ header.header {
 .spool-diagram .stage-title {
 	font-size: 17px;
 	font-weight: 700;
+}
+
+@supports not selector(::-webkit-scrollbar) {
+	.expressive-code pre {
+		scrollbar-width: thin;
+		scrollbar-color: var(--spool-scrollbar) transparent;
+	}
+}
+
+.expressive-code pre::-webkit-scrollbar {
+	height: 6px;
+}
+
+.expressive-code pre::-webkit-scrollbar-button {
+	display: none;
+}
+
+.expressive-code pre::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+.expressive-code pre::-webkit-scrollbar-thumb {
+	border-radius: 3px;
+	background: var(--spool-scrollbar);
 }
