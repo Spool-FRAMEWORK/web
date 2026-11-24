@@ -24,7 +24,7 @@ const palette = {
 const fontsDirectory = join(process.cwd(), 'src', 'assets', 'fonts');
 const longTitleLength = 30;
 const title = { fontSize: 64, longFontSize: 52 };
-const description = { maximumLength: 150, maximumLengthUnderLongTitle: 96 };
+const description = { maximumLength: 150, maximumLengthUnderLongTitle: 130 };
 const illustrationMargin = 24;
 
 type Node = { type: string; props: Record<string, unknown> };
