@@ -7,9 +7,10 @@ sidebar:
 ---
 
 import { Code } from '@astrojs/starlight/components';
-import { site, mavenDependency } from '../../../data/site';
+import { site } from '../../../data/site';
+import { latestRelease, mavenDependency } from '../../../data/release';
 
-Spool needs Java {site.requiredJavaVersion} or later. It is published on Maven Central under the group <code>{site.latestRelease.groupId}</code>, so no extra repository is needed in your `pom.xml`.
+Spool needs Java {site.requiredJavaVersion} or later. It is published on Maven Central under the group <code>{latestRelease.groupId}</code>, so no extra repository is needed in your `pom.xml`.
 
 ## Add the runtime
 
@@ -19,14 +20,14 @@ The `runtime` artifact starts pipelines and brings the rest of the framework wit
 
 ## What the runtime includes
 
-Version {site.latestRelease.version} of the runtime pulls in these modules.
+Version {latestRelease.version} of the runtime pulls in these modules.
 
 <table>
 	<thead>
 		<tr><th>Artifact</th><th>Version</th><th>What it does</th></tr>
 	</thead>
 	<tbody>
-		{site.latestRelease.includedModules.map((module) => (
+		{latestRelease.includedModules.map((module) => (
 			<tr><td><code>{module.artifactId}</code></td><td>{module.version}</td><td>{module.role}</td></tr>
 		))}
 	</tbody>
