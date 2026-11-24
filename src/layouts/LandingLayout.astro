@@ -29,7 +29,9 @@ const socialImage = new URL(withBase(landingSocialCardPath), Astro.site ?? Astro
 		{canonical && <meta property="og:url" content={canonical} />}
 		<meta name="twitter:card" content="summary_large_image" />
 		{socialImageTags(socialImage, site.headline).map(({ attrs }) => <meta {...attrs} />)}
+		<link rel="icon" href={withBase('favicon.ico')} sizes="32x32" />
 		<link rel="icon" href={withBase('favicon.svg')} type="image/svg+xml" />
+		<link rel="apple-touch-icon" href={withBase('apple-touch-icon.png')} />
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 		<link rel="stylesheet" href={fontsStylesheetUrl} />

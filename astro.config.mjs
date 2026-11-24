@@ -10,6 +10,8 @@ import { docsSections, fontsStylesheetUrl, site } from './src/data/site.ts';
 import { rehypeBaseLinks } from './src/plugins/rehype-base-links.mjs';
 import { openApiContracts, openApiContractsDirectory } from './src/data/openapi-contracts.mjs';
 
+const siteBasePath = `${(process.env.SITE_BASE_PATH ?? '/').replace(/\/$/, '')}/`;
+
 const downloadedOpenApiContracts = openApiContracts
 	.map((contract) => ({ ...contract, schema: join(openApiContractsDirectory, contract.fileName) }))
 	.filter((contract) => existsSync(contract.schema));
@@ -41,6 +43,8 @@ export default defineConfig({
 			description: site.description,
 			social: [{ icon: 'github', label: 'GitHub', href: site.githubUrl }],
 			head: [
+				{ tag: 'link', attrs: { rel: 'icon', href: `${siteBasePath}favicon.ico`, sizes: '32x32' } },
+				{ tag: 'link', attrs: { rel: 'apple-touch-icon', href: `${siteBasePath}apple-touch-icon.png` } },
 				{ tag: 'link', attrs: { rel: 'preconnect', href: 'https://fonts.googleapis.com' } },
 				{ tag: 'link', attrs: { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' } },
 				{ tag: 'link', attrs: { rel: 'stylesheet', href: fontsStylesheetUrl } },
