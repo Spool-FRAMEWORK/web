@@ -1,6 +1,6 @@
 ---
 import { cliInstallScripts, site, withBase } from '../../data/site';
-import { latestRelease } from '../../data/release';
+import { changelogPath, latestRelease } from '../../data/release';
 
 const scriptUrl = (script: string) => new URL(withBase(script), Astro.site ?? Astro.url).href;
 const commands = {
@@ -10,7 +10,7 @@ const commands = {
 ---
 
 <section class="hero wrap">
-	<a class="release" href={withBase('getting-started/')}>
+	<a class="release" href={withBase(changelogPath)}>
 		<span class="release-tag">New</span>Release {latestRelease.version}
 		<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
 	</a>

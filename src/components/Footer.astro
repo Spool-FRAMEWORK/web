@@ -2,12 +2,14 @@
 import DefaultFooter from '@astrojs/starlight/components/Footer.astro';
 import { site, withBase } from '../data/site';
 import { brand } from '../data/brand';
+import { changelogPath } from '../data/release';
 
 const documentationLinks = [
 	{ label: 'Install', href: withBase('getting-started/') },
 	{ label: 'Build your first pipeline', href: withBase('getting-started/first-pipeline/') },
 	{ label: 'Modules', href: withBase('modules/') },
 	{ label: 'Descriptor reference', href: withBase('dsl/') },
+	{ label: 'Changelog', href: withBase(changelogPath) },
 ];
 
 const projectLinks = [

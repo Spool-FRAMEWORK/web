@@ -83,6 +83,7 @@ export default defineConfig({
 					items: [{ autogenerate: { directory } }],
 				})),
 				...apiReference.sidebar,
+				{ label: 'Changelog', link: '/changelog/' },
 			],
 		}),
 		react(),

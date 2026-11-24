@@ -1,10 +1,12 @@
 ---
 import Logo from './Logo.astro';
 import { brand } from '../../data/brand';
+import { changelogPath } from '../../data/release';
 import { site, withBase } from '../../data/site';
 
 const links = [
 	{ label: 'Documentation', href: withBase('getting-started/') },
+	{ label: 'Changelog', href: withBase(changelogPath) },
 	{ label: 'Examples', href: site.examplesUrl },
 	{ label: 'Maven Central', href: site.mavenCentralUrl },
 	{ label: 'GitHub', href: site.githubUrl },

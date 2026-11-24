@@ -1,0 +1,120 @@
+---
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+import { Badge } from '@astrojs/starlight/components';
+import { site } from '../data/site';
+import { releases, type ModuleChange } from '../data/release';
+
+const anchorOf = (version: string) => `${site.name.toLowerCase()}-${version.replaceAll('.', '-')}`;
+const dateOf = (date?: string) => (date ? new Date(date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : undefined);
+const hasNotes = (change: ModuleChange) => Boolean(change.notes?.length) || change.features.length > 0 || change.fixes.length > 0;
+
+const headings = releases.map((release) => ({ depth: 2, slug: anchorOf(release.version), text: `${site.name} ${release.version}` }));
+---
+
+<StarlightPage
+	frontmatter={{ title: 'Changelog', description: `Every release of ${site.name}, the version of each module it brings and what changed in them.` }}
+	headings={headings}
+>
+	<p>Every release of {site.name}, the version of each module it brings and what changed in them. The page is built from the artifacts on Maven Central and the history of each module, so it updates itself after every release.</p>
+
+	{releases.map((release) => {
+		const described = release.changes.filter(hasNotes);
+		const unchanged = release.changes.filter((change) => !hasNotes(change) && !change.first && !change.missing);
+		const firstRelease = release.changes.length > 0 && release.changes.every((change) => change.first);
+		return (
+			<section class="release">
+				<h2 id={anchorOf(release.version)}>{site.name} {release.version}</h2>
+				{dateOf(release.date) && <p class="release-date">Released on {dateOf(release.date)}.</p>}
+				{firstRelease && <p>The first release on Maven Central.</p>}
+				<p class="modules">
+					<span>Brings</span>
+					{release.modules.map((module) => <code>{module.artifactId} {module.version}</code>)}
+				</p>
+
+				{described.map((change) => (
+					<div class="module">
+						<h3>
+							{change.artifactId} {change.version}
+							{change.previous && <span class="previous">from {change.previous}</span>}
+						</h3>
+						{change.notes ? (
+							<ul>{change.notes.map((note) => <li>{note}</li>)}</ul>
+						) : (
+							<>
+								{change.features.length > 0 && (
+									<>
+										<p class="kind">New</p>
+										<ul>{change.features.map((feature) => <li>{feature.breaking && <Badge text="Breaking" variant="caution" />} {feature.text}</li>)}</ul>
+									</>
+								)}
+								{change.fixes.length > 0 && (
+									<>
+										<p class="kind">Fixed</p>
+										<ul>{change.fixes.map((fix) => <li>{fix.breaking && <Badge text="Breaking" variant="caution" />} {fix.text}</li>)}</ul>
+									</>
+								)}
+							</>
+						)}
+					</div>
+				))}
+
+				{unchanged.length > 0 && (
+					<p class="unchanged">
+						<span>Released again with no changes of their own</span>
+						{unchanged.map((change) => <code>{change.artifactId} {change.version}</code>)}
+					</p>
+				)}
+
+				{release.changes.filter((change) => change.missing).map((change) => (
+					<p class="unchanged">The notes of {change.artifactId} {change.version} could not be loaded when the site was built.</p>
+				))}
+			</section>
+		);
+	})}
+</StarlightPage>
+
+<style>
+	.release + .release {
+		margin-top: 3rem;
+		padding-top: 2rem;
+		border-top: 1px solid var(--spool-border);
+	}
+
+	.release-date {
+		color: var(--sl-color-gray-3);
+	}
+
+	.modules,
+	.unchanged {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		gap: 0.4rem 0.5rem;
+		font-size: var(--sl-text-sm);
+		color: var(--sl-color-gray-3);
+	}
+
+	.module h3 {
+		display: flex;
+		align-items: baseline;
+		gap: 0.6rem;
+		font-family: var(--__sl-font-mono);
+		font-size: var(--sl-text-lg);
+	}
+
+	.previous {
+		font-family: var(--__sl-font);
+		font-size: var(--sl-text-sm);
+		font-weight: 400;
+		color: var(--sl-color-gray-3);
+	}
+
+	.kind {
+		margin-bottom: 0;
+		font-size: var(--sl-text-xs);
+		font-weight: 600;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+		color: var(--sl-color-gray-3);
+	}
+</style>
