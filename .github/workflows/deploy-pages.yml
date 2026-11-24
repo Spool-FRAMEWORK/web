@@ -3,6 +3,8 @@ on:
   push:
     branches: [ develop ]
   workflow_dispatch:
+  schedule:
+    - cron: "17 5 * * *"
   repository_dispatch:
     types: [ cli-released ]
 permissions:
@@ -38,6 +40,10 @@ jobs:
         env:
           OPENAPI_REF: ${{ vars.OPENAPI_REF }}
         run: npm run fetch:openapi
+      - name: Download the release data
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: npm run fetch:releases
       - run: npm run build
         env:
           SITE_URL: ${{ vars.SITE_URL }}

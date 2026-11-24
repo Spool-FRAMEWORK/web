@@ -8,7 +8,8 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "fetch:openapi": "node scripts/fetch-openapi-contracts.mjs"
+    "fetch:openapi": "node scripts/fetch-openapi-contracts.mjs",
+    "fetch:releases": "node scripts/fetch-releases.mjs"
   },
   "dependencies": {
     "@astrojs/react": "^7.1.9",

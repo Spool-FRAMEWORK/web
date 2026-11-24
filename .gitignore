@@ -8,6 +8,9 @@ public/install.ps1
 # OpenAPI contracts, downloaded from the module repositories before the build
 src/openapi/
 
+# Release data of spool, downloaded from Maven Central and GitHub before the build
+src/generated/
+
 # generated types
 .astro/
 
