@@ -1,5 +1,6 @@
 ---
 import Logo from './Logo.astro';
+import { brand } from '../../data/brand';
 import { site, withBase } from '../../data/site';
 
 const links = [
@@ -15,7 +16,7 @@ const links = [
 	<header class="wrap">
 		<a class="brand" href={withBase('')} aria-label="Spool home">
 			<Logo size={30} tone="on-light" />
-			<span>spool</span>
+			<span>{brand.wordmark}</span>
 		</a>
 		<nav class="hide-small" aria-label="Main">
 			{links.map((link) => <a href={link.href}>{link.label}</a>)}

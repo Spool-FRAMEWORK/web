@@ -1,13 +1,18 @@
 ---
 import Search from '@astrojs/starlight/components/Search.astro';
-import SiteTitle from '@astrojs/starlight/components/SiteTitle.astro';
 import SocialIcons from '@astrojs/starlight/components/SocialIcons.astro';
 import ThemeSelect from '@astrojs/starlight/components/ThemeSelect.astro';
 import { headerLinks, withBase } from '../data/site';
+import { brand, markSvg } from '../data/brand';
 ---
 
 <div class="header">
-	<div class="title-wrapper sl-flex"><SiteTitle /></div>
+	<div class="title-wrapper sl-flex">
+		<a class="site-title" href={withBase('')} aria-label="Spool home">
+			<Fragment set:html={markSvg({ tone: 'on-dark', size: 30 })} />
+			<span>{brand.wordmark}</span>
+		</a>
+	</div>
 	<nav class="header-links sl-hidden md:sl-flex" aria-label="Main">
 		{headerLinks.map((link) => <a href={withBase(link.path)}>{link.label}</a>)}
 	</nav>
@@ -24,6 +29,15 @@ import { headerLinks, withBase } from '../data/site';
 		gap: var(--sl-nav-gap);
 		align-items: center;
 		height: 100%;
+	}
+	.site-title {
+		display: flex;
+		align-items: center;
+		gap: 0.6rem;
+		color: #ffffff;
+		font-size: 1.375rem;
+		font-weight: 600;
+		text-decoration: none;
 	}
 	.title-wrapper {
 		overflow: clip;

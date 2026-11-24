@@ -2,6 +2,7 @@ import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { Resvg } from '@resvg/resvg-js';
 import satori from 'satori';
+import { brand, markSvg } from '../data/brand';
 
 export const socialCardSize = { width: 1200, height: 627 };
 
@@ -45,10 +46,6 @@ function gridSvg(): string {
 	return `<svg xmlns="http://www.w3.org/2000/svg" width="${socialCardSize.width}" height="${socialCardSize.height}"><g stroke="${palette.grid}" stroke-width="1">${lines.join('')}</g></svg>`;
 }
 
-function logoSvg(): string {
-	return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="10 -2 56 56"><path d="M24 24A4 4 0 0 1 32 24A8 8 0 0 1 16 24A12 12 0 0 1 40 24" stroke="${palette.ink}" stroke-width="4" stroke-linecap="round" fill="none"/><path d="M40 24Q40 38 52 38" stroke="${palette.blue}" stroke-width="4" stroke-linecap="round" fill="none"/><circle cx="57" cy="38" r="4" fill="${palette.blue}"/></svg>`;
-}
-
 function shorten(text: string, maximumLength: number): string {
 	if (text.length <= maximumLength) return text;
 	const cut = text.slice(0, maximumLength);
@@ -70,8 +67,8 @@ function layout(card: SocialCard): Node {
 			element('img', { position: 'absolute', left: 0, top: 0 }, undefined, { src: svgDataUri(gridSvg()), width: socialCardSize.width, height: socialCardSize.height }),
 			element('img', { position: 'absolute', right: 72, bottom: 64 }, undefined, { src: svgDataUri(withMargin(card.illustration)), width: 432, height: 360 }),
 			element('div', { position: 'absolute', left: 72, top: 64, display: 'flex', alignItems: 'center', gap: 14 }, [
-				element('img', {}, undefined, { src: svgDataUri(logoSvg()), width: 52, height: 52 }),
-				element('div', { fontFamily: 'Familjen Grotesk', fontSize: 36, letterSpacing: '-0.01em' }, 'Spool'),
+				element('img', {}, undefined, { src: svgDataUri(markSvg({ tone: 'on-light' })), width: 52, height: 52 }),
+				element('div', { fontFamily: 'Familjen Grotesk', fontSize: 36, letterSpacing: '-0.01em' }, brand.wordmark),
 			]),
 			element('div', { position: 'absolute', left: 72, top: 176, width: 600, display: 'flex', flexDirection: 'column', gap: 22 }, [
 				element('div', { fontFamily: 'IBM Plex Mono', fontSize: 22, color: palette.blue, textTransform: 'uppercase', letterSpacing: '0.08em' }, card.eyebrow),

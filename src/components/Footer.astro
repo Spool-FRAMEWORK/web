@@ -1,6 +1,7 @@
 ---
 import DefaultFooter from '@astrojs/starlight/components/Footer.astro';
 import { site, withBase } from '../data/site';
+import { brand } from '../data/brand';
 
 const documentationLinks = [
 	{ label: 'Install', href: withBase('getting-started/') },
@@ -23,7 +24,7 @@ const year = new Date().getFullYear();
 <div class="site-footer">
 	<div class="columns">
 		<div class="about">
-			<a class="brand" href={withBase('')}>{site.name}</a>
+			<a class="brand" href={withBase('')}>{brand.wordmark}</a>
 			<p>Created by {site.author} as a {site.origin}.</p>
 		</div>
 		<nav aria-label="Documentation">

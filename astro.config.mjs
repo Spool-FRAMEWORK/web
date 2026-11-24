@@ -38,7 +38,6 @@ export default defineConfig({
 	integrations: [
 		starlight({
 			title: site.name,
-			logo: { src: './src/assets/logo-on-dark.svg', alt: '' },
 			description: site.description,
 			social: [{ icon: 'github', label: 'GitHub', href: site.githubUrl }],
 			head: [

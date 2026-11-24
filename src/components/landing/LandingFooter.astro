@@ -1,5 +1,6 @@
 ---
 import Logo from './Logo.astro';
+import { brand } from '../../data/brand';
 import { site, withBase } from '../../data/site';
 
 const links = [
@@ -13,7 +14,7 @@ const links = [
 <footer class="wrap">
 	<span class="brand">
 		<Logo size={24} tone="on-dark" />
-		<span>spool</span>
+		<span>{brand.wordmark}</span>
 	</span>
 	<span class="about">
 		<span>Created by {site.author} as a {site.origin}.</span>
